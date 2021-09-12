@@ -18,18 +18,137 @@ In this project we used high‐throughput phenomics to identify synergistic or a
 
 Transcriptomics analysis to understand the mechanistic basis of chemical interactions was performed for two chemical interactions for growth rate (growth during the exponential growth phase), identified in our phenomics experiment, that were conserved in both species i.e. NaCl and rapamycin synergism, and salt and paraquat antagonism.
 
-The details of the transcriptomic samples are given in **RAW_DATA_TRANSCRIPTOMICS/SAMPLE_DETAILS.xlsx**
+The details of the transcriptomic samples are given in **COMPILED_DATA/SAMPLE_DETAILS.xlsx**
 
-```{r cars}
-summary(cars)
+* **UPSTREAM ANALYSIS**
+
+We used the alignment program, HISAT2 (version 2.1.0) [Kim, 2015](https://doi.org/10.1038/nmeth.3317) for mapping next-generation sequencing reads with the reference sequence. Preprocessing of RNA-seq alignments for differential expression calling was performed afterwards using the Python package HTSeq (version 0.11.1) [Anders, 2014](https://doi.org/10.1093/bioinformatics/btu638). The UPSTREAM ANALYSIS RESULTS has been described in details in the [Git_folder](https://github.com/mukherjeevaskar267/Mixtox_transcriptomics/tree/main/UPSTREAM_ANALYSIS)
+
+* **DOWNSTREAM ANALYSIS**
+
+Downstream analysis to identify deferentially expressed genes was performed using the R package DESeq2 (version 1.30.1) [Love, 2014](https://doi.org/10.1186/s13059-014-0550-8).
+
+## IMPORT DATA
+
+* STEP1 : Save the path of the HTSeq output folder in a variable
+
+```{r}
+#for cerevisiae
+Dir_sc <- "RAW_COUNT_DATA/HTSEQ_SC/"
+
+#for hansenii
+Dir_dh <- "RAW_COUNT_DATA/HTSEQ_DH/"
+
 ```
 
-## Including Plots
+* STEP2 : Create a sample table with 3 columns. First column should be "sampleName" i.e. the name identifier of the samples. The second column should be "fileName" i.e. the file name list in this htseq output folder with the correct extentions, and the third column should be condition i.e. the treatment condition. The column names should be exactly same without the quotations. This is necessary for the functions to work properly. You can create this table in excel and then copy paste it in a .txt object. Later it can be read by the read.table function.
 
-You can also embed plots, for example:
+```{r}
+#for cerevisiae
+sampleinfo_sc <- read.table("COMPILED_DATA/sampleTable_SC.txt", header = TRUE, sep = "\t", as.is = TRUE)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#for hansenii
+sampleinfo_dh <- read.table("COMPILED_DATA/sampleTable_DH.txt", header = TRUE, sep = "\t", as.is = TRUE)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+* STEP3 : Create the sampleTable object for both dataset
+
+```{r}
+#for cerevisiae
+sampleTable_sc <- data.frame(sampleName = sampleinfo_sc$sampleName,
+                          fileName = sampleinfo_sc$fileName,
+                          condition = sampleinfo_sc$condition)
+
+#for hansenii
+sampleTable_dh <- data.frame(sampleName = sampleinfo_dh$sampleName,
+                          fileName = sampleinfo_dh$fileName,
+                          condition = sampleinfo_dh$condition)
+```
+
+* STEP4 : Build the DESeqDataSet
+
+```{r, message=FALSE, warning=FALSE}
+library(DESeq2)
+#for cerevisiae
+ddsHTSeq_sc <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable_sc,
+                                       directory = Dir_sc,
+                                       design= ~ condition)
+
+#for hansenii
+ddsHTSeq_dh <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable_dh,
+                                       directory = Dir_dh,
+                                       design= ~ condition)
+```
+
+* STEP5 : Print the object
+
+```{r}
+#for cerevisiae
+ddsHTSeq_sc
+#for hansenii
+ddsHTSeq_dh
+```
+
+## DATA TRANSFORMATION
+
+* STEP1 : PRE-FILTERING
+
+```{r}
+#for cerevisiae
+keep<-rowSums(counts(ddsHTSeq_sc)) >= 10
+dds_SC<-ddsHTSeq_sc[keep, ]
+dds_SC_LOST<-ddsHTSeq_sc[!keep, ]
+#for hansenii
+keep<-rowSums(counts(ddsHTSeq_dh)) >= 10
+dds_DH<-ddsHTSeq_dh[keep, ]
+dds_DH_LOST<-ddsHTSeq_dh[!keep, ]
+```
+
+* STEP2: DATA-TRANSFORMATION > Data transformation functions within DESeq one are the ntd (shifted logarithm), rlog (regularized logarithm) and vst (variance stabilizing transformation). The shifted logarithm has elevated standard deviation in the lower count range, and the regularized log to a lesser extent, while for the variance stabilized data the standard deviation is roughly constant along the whole dynamic range. Note that the vertical axis in such plots is the square root of the variance over all samples, so including the variance due to the experimental conditions. While a flat curve of the square root of variance over the mean may seem like the goal of such transformations, this may be unreasonable in the case of datasets with many true differences due to the experimental conditions.
+
+```{r}
+#for cerevisiae
+rld_sc <- rlogTransformation(dds_SC)
+vsd_sc <- varianceStabilizingTransformation(dds_SC)
+ntd_sc <- normTransform(dds_SC)
+#for hansenii
+rld_dh <- rlogTransformation(dds_DH)
+vsd_dh <- varianceStabilizingTransformation(dds_DH)
+ntd_dh <- normTransform(dds_DH)
+```
+
+* STEP3: DATA-VISUALIZATION > Effects of transformations on the variance
+
+```{r figure1, echo=FALSE, fig.cap="Figure 1A: Effects of transformations on the variance, S. cerevisiae and rld transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(rld_sc))
+```
+
+```{r figure2, echo=FALSE, fig.cap="Figure 1B: Effects of transformations on the variance, S. cerevisiae and vsd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(vsd_sc))
+```
+
+```{r figure3, echo=FALSE, fig.cap="Figure 1C: Effects of transformations on the variance, S. cerevisiae and ntd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(ntd_sc))
+```
+
+```{r figure4, echo=FALSE, fig.cap="Figure 2A: Effects of transformations on the variance, D. hansenii and rld transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(rld_dh))
+```
+
+```{r figure5, echo=FALSE, fig.cap="Figure 2B: Effects of transformations on the variance, D. hansenii and vsd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(vsd_dh))
+```
+
+```{r figure6, echo=FALSE, fig.cap="Figure 2C: Effects of transformations on the variance, D. hansenii and ntd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(ntd_dh))
+```
+
+
+
+
