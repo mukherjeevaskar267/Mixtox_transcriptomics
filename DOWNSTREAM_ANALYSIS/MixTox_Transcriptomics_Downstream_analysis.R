@@ -91,12 +91,80 @@ library(vsn)
 install.packages("cowplot")
 library(cowplot)
 
+pdf("R_FIGURES/1A_rld_sc.pdf")
 meanSdPlot(assay(rld_sc))
-meanSdPlot(assay(vsd_sc))
-meanSdPlot(assay(ntd_sc))
-meanSdPlot(assay(rld_dh))
-meanSdPlot(assay(vsd_dh))
-meanSdPlot(assay(ntd_dh))
+dev.off()
 
+pdf("R_FIGURES/1B_vsd_sc.pdf")
+meanSdPlot(assay(vsd_sc))
+dev.off()
+
+pdf("R_FIGURES/1C_ntd_sc.pdf")
+meanSdPlot(assay(ntd_sc))
+dev.off()
+
+pdf("R_FIGURES/2A_rld_dh.pdf")
+meanSdPlot(assay(rld_dh))
+dev.off()
+
+pdf("R_FIGURES/2B_vsd_dh.pdf")
+meanSdPlot(assay(vsd_dh))
+dev.off()
+
+pdf("R_FIGURES/2C_ntd_dh.pdf")
+meanSdPlot(assay(ntd_dh))
+dev.off()
+
+#PCA PLOT
+#for cerevisiae
+pdf("R_FIGURES/3_PCA_SC.pdf", height = 4, width = 8)
+plotPCA(rld_sc)
+dev.off()
+
+#for hansenii
+pdf("R_FIGURES/4_PCA_DH.pdf", height = 4, width = 8)
+plotPCA(rld_dh)
+dev.off()
+
+#DATA-VISUALIZATION 3 > SIMILARITY MATRIX
+
+#Calculation of the euclidean distance of the transformed data. 
+#We need to transpose the data since we want to calculate the distance between samples rather than among genes. 
+#So we need the samples as rows rather than columns
+
+library(DESeq2)
+library(pheatmap)        
+library(RColorBrewer)
+
+#for cerevisiae
+sampleDists_SC <- dist(t(assay(rld_sc)))
+#Creating the corresponding matrix
+sampleDistMatrix_SC <- as.matrix(sampleDists_SC)
+#creating a distance matrix tagging the groups of the samples
+sample_data_sc<-data.frame(Group=sampleinfo_sc$condition)
+row.names(sample_data_sc)<-sampleinfo_sc$sampleName
+#defining the colors we want to use depending on the condition
+annotation_sc <- list(Group = c(Ctrl="green", Para="brown", Rapa="red", Salt="cyan", SaPa="blue", SaRa="magenta"))
+
+#for hansenii
+sampleDists_DH <- dist(t(assay(rld_dh)))
+#Creating the corresponding matrix
+sampleDistMatrix_DH <- as.matrix(sampleDists_DH)
+#creating a distance matrix tagging the groups of the samples
+sample_data_dh<-data.frame(Group=sampleinfo_dh$condition)
+row.names(sample_data_dh)<-sampleinfo_dh$sampleName
+#defining the colors we want to use depending on the condition
+annotation_dh <- list(Group = c(Ctrl="green", Para="brown", Rapa="red", Salt1="cyan", Salt2="turquoise4", SaPa="blue", SaRa="magenta"))
+
+#Make a color palette for heatmap
+colfunc<-colorRampPalette(c("goldenrod4", "goldenrod", "white", "turquoise", "turquoise4"))
+
+#Plotting the heatmap for cerevisiae 
+pdf("R_FIGURES/5_Similarity_mat_SC.pdf")
+pheatmap(sampleDistMatrix_SC, 
+         annotation_col = sample_data_sc, 
+         annotation_colors = annotation_sc, 
+         color = colfunc(50))
+dev.off()
 
 
