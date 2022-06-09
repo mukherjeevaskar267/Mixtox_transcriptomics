@@ -1,0 +1,2594 @@
+%!PS-Adobe-3.0
+%%Creator: graphviz version 2.43.0 (0)
+%%Title: GOTermFinder
+%%Pages: (atend)
+%%BoundingBox: (atend)
+%%EndComments
+save
+%%BeginProlog
+/DotDict 200 dict def
+DotDict begin
+
+/setupLatin1 {
+mark
+/EncodingVector 256 array def
+ EncodingVector 0
+
+ISOLatin1Encoding 0 255 getinterval putinterval
+EncodingVector 45 /hyphen put
+
+% Set up ISO Latin 1 character encoding
+/starnetISO {
+        dup dup findfont dup length dict begin
+        { 1 index /FID ne { def }{ pop pop } ifelse
+        } forall
+        /Encoding EncodingVector def
+        currentdict end definefont
+} def
+/Times-Roman starnetISO def
+/Times-Italic starnetISO def
+/Times-Bold starnetISO def
+/Times-BoldItalic starnetISO def
+/Helvetica starnetISO def
+/Helvetica-Oblique starnetISO def
+/Helvetica-Bold starnetISO def
+/Helvetica-BoldOblique starnetISO def
+/Courier starnetISO def
+/Courier-Oblique starnetISO def
+/Courier-Bold starnetISO def
+/Courier-BoldOblique starnetISO def
+cleartomark
+} bind def
+
+%%BeginResource: procset graphviz 0 0
+/coord-font-family /Times-Roman def
+/default-font-family /Times-Roman def
+/coordfont coord-font-family findfont 8 scalefont def
+
+/InvScaleFactor 1.0 def
+/set_scale {
+       dup 1 exch div /InvScaleFactor exch def
+       scale
+} bind def
+
+% styles
+/solid { [] 0 setdash } bind def
+/dashed { [9 InvScaleFactor mul dup ] 0 setdash } bind def
+/dotted { [1 InvScaleFactor mul 6 InvScaleFactor mul] 0 setdash } bind def
+/invis {/fill {newpath} def /stroke {newpath} def /show {pop newpath} def} bind def
+/bold { 2 setlinewidth } bind def
+/filled { } bind def
+/unfilled { } bind def
+/rounded { } bind def
+/diagonals { } bind def
+/tapered { } bind def
+
+% hooks for setting color 
+/nodecolor { sethsbcolor } bind def
+/edgecolor { sethsbcolor } bind def
+/graphcolor { sethsbcolor } bind def
+/nopcolor {pop pop pop} bind def
+
+/beginpage {	% i j npages
+	/npages exch def
+	/j exch def
+	/i exch def
+	/str 10 string def
+	npages 1 gt {
+		gsave
+			coordfont setfont
+			0 0 moveto
+			(\() show i str cvs show (,) show j str cvs show (\)) show
+		grestore
+	} if
+} bind def
+
+/set_font {
+	findfont exch
+	scalefont setfont
+} def
+
+% draw text fitted to its expected width
+/alignedtext {			% width text
+	/text exch def
+	/width exch def
+	gsave
+		width 0 gt {
+			[] 0 setdash
+			text stringwidth pop width exch sub text length div 0 text ashow
+		} if
+	grestore
+} def
+
+/boxprim {				% xcorner ycorner xsize ysize
+		4 2 roll
+		moveto
+		2 copy
+		exch 0 rlineto
+		0 exch rlineto
+		pop neg 0 rlineto
+		closepath
+} bind def
+
+/ellipse_path {
+	/ry exch def
+	/rx exch def
+	/y exch def
+	/x exch def
+	matrix currentmatrix
+	newpath
+	x y translate
+	rx ry scale
+	0 0 1 0 360 arc
+	setmatrix
+} bind def
+
+/endpage { showpage } bind def
+/showpage { } def
+
+/layercolorseq
+	[	% layer color sequence - darkest to lightest
+		[0 0 0]
+		[.2 .8 .8]
+		[.4 .8 .8]
+		[.6 .8 .8]
+		[.8 .8 .8]
+	]
+def
+
+/layerlen layercolorseq length def
+
+/setlayer {/maxlayer exch def /curlayer exch def
+	layercolorseq curlayer 1 sub layerlen mod get
+	aload pop sethsbcolor
+	/nodecolor {nopcolor} def
+	/edgecolor {nopcolor} def
+	/graphcolor {nopcolor} def
+} bind def
+
+/onlayer { curlayer ne {invis} if } def
+
+/onlayers {
+	/myupper exch def
+	/mylower exch def
+	curlayer mylower lt
+	curlayer myupper gt
+	or
+	{invis} if
+} def
+
+/curlayer 0 def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+14 default-font-family set_font
+% /arrowlength 10 def
+% /arrowwidth 5 def
+
+% make sure pdfmark is harmless for PS-interpreters other than Distiller
+/pdfmark where {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% make '<<' and '>>' safe on PS Level 1 devices
+/languagelevel where {pop languagelevel}{1} ifelse
+2 lt {
+    userdict (<<) cvn ([) cvn load put
+    userdict (>>) cvn ([) cvn load put
+} if
+
+%%EndSetup
+setupLatin1
+%%Page: 1 1
+%%PageBoundingBox: 36 36 576 752
+%%PageOrientation: Portrait
+0 0 1 beginpage
+gsave
+36 36 540 716 boxprim clip newpath
+0.146047 0.146047 set_scale 0 rotate 250.497 250.497 translate
+% node1
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3014.9481 4844 moveto
+2856.9481 4844 lineto
+2856.9481 4808 lineto
+3014.9481 4808 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3014.9481 4844 moveto
+2856.9481 4844 lineto
+2856.9481 4808 lineto
+3014.9481 4808 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2864.9481 4822.5 moveto 142 (molecular function) alignedtext
+grestore
+% node6
+gsave
+0.62353 0.71765 1 nodecolor
+newpath 2942.4481 4569 moveto
+2861.4481 4569 lineto
+2861.4481 4527 lineto
+2942.4481 4527 lineto
+closepath fill
+1 setlinewidth
+filled
+0.62353 0.71765 1 nodecolor
+newpath 2942.4481 4569 moveto
+2861.4481 4569 lineto
+2861.4481 4527 lineto
+2942.4481 4527 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2869.4481 4553 moveto 65 (catalytic) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2873.4481 4536 moveto 57 (activity) alignedtext
+grestore
+% node1->node6
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2933.8213 4807.735 moveto
+2927.8316 4759.1132 2910.843 4621.2055 2904.4353 4569.1901 curveto
+stroke
+grestore
+% node37
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3400.4481 3358 moveto
+3297.4481 3358 lineto
+3297.4481 3316 lineto
+3400.4481 3316 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3400.4481 3358 moveto
+3297.4481 3358 lineto
+3297.4481 3316 lineto
+3400.4481 3316 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+3305.4481 3342 moveto 87 (antioxidant) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3320.4481 3325 moveto 57 (activity) alignedtext
+grestore
+% node1->node37
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2940.7291 4807.7861 moveto
+2983.3475 4654.3392 3297.5832 3522.9386 3343.3852 3358.0292 curveto
+stroke
+grestore
+% node2
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2505.9481 1382.5 moveto
+2375.9481 1382.5 lineto
+2375.9481 1289.5 lineto
+2505.9481 1289.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2505.9481 1382.5 moveto
+2375.9481 1382.5 lineto
+2375.9481 1289.5 lineto
+2505.9481 1289.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2383.9481 1366.5 moveto 114 (cytochrome-b5) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2403.4481 1349.5 moveto 75 (reductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2410.4481 1332.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2405.4481 1315.5 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2407.9481 1298.5 moveto 66 (NAD\(P\)H) alignedtext
+grestore
+% node7
+gsave
+0 0 0.65098 nodecolor
+newpath 2471.4481 843 moveto
+2414.4481 843 lineto
+2414.4481 807 lineto
+2471.4481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2471.4481 843 moveto
+2414.4481 843 lineto
+2414.4481 807 lineto
+2471.4481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2422.4481 821.5 moveto 41 (PGA3) alignedtext
+grestore
+% node2->node7
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2441.1274 1289.3817 moveto
+2441.5521 1181.284 2442.6049 913.3443 2442.881 843.0894 curveto
+stroke
+grestore
+% node3
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2365.4481 2123 moveto
+2232.4481 2123 lineto
+2232.4481 2013 lineto
+2365.4481 2013 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2365.4481 2123 moveto
+2232.4481 2123 lineto
+2232.4481 2013 lineto
+2365.4481 2013 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2240.9481 2107 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2268.4481 2090 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2263.4481 2073 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2240.4481 2056 moveto 117 (NAD\(P\)H, heme) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2260.9481 2039 moveto 76 (protein as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2265.9481 2022 moveto 66 (acceptor) alignedtext
+grestore
+% node3->node2
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2309.5052 2012.7277 moveto
+2336.4043 1874.4435 2407.1486 1510.758 2432.0898 1382.5392 curveto
+stroke
+grestore
+% node4
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2369.9481 3375 moveto
+2237.9481 3375 lineto
+2237.9481 3299 lineto
+2369.9481 3299 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2369.9481 3375 moveto
+2237.9481 3375 lineto
+2237.9481 3299 lineto
+2369.9481 3299 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2245.9481 3359 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2273.4481 3342 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2268.4481 3325 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2270.9481 3308 moveto 66 (NAD\(P\)H) alignedtext
+grestore
+% node4->node3
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2303.8012 3298.7673 moveto
+2303.0902 3118.611 2300.007 2337.3129 2299.1626 2123.3506 curveto
+stroke
+grestore
+% node5
+gsave
+0.10588 1 1 nodecolor
+newpath 2589.9481 4279 moveto
+2457.9481 4279 lineto
+2457.9481 4237 lineto
+2589.9481 4237 lineto
+closepath fill
+1 setlinewidth
+filled
+0.10588 1 1 nodecolor
+newpath 2589.9481 4279 moveto
+2457.9481 4279 lineto
+2457.9481 4237 lineto
+2589.9481 4237 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2465.9481 4263 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2495.4481 4246 moveto 57 (activity) alignedtext
+grestore
+% node5->node4
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2519.1485 4236.9507 moveto
+2491.2487 4120.4054 2349.9039 3529.9697 2312.8513 3375.191 curveto
+stroke
+grestore
+% node8
+gsave
+0 0 0.65098 nodecolor
+newpath 3279.4481 3528 moveto
+2980.4481 3528 lineto
+2980.4481 3146 lineto
+3279.4481 3146 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 3279.4481 3528 moveto
+2980.4481 3528 lineto
+2980.4481 3146 lineto
+3279.4481 3146 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3008.4481 3512 moveto 243 (PGA3 AAD10 SPS19 MXR2 ARA2) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2993.4481 3495 moveto 273 (TDH1 ALD4 GPX1 GUT2 ALD3 AIM17) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3003.9481 3478 moveto 252 (RNR4 OLE1 IFA38 YDL124W NDI1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2992.4481 3461 moveto 275 (MET10 ADH2 XYL2 ADH3 POX1 IMD3) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2991.4481 3444 moveto 277 (ARG56 IDP2 BNA2 FAS2 HMG1 UGA2) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3009.9481 3427 moveto 240 (DLD3 ILV5 CYB2 COX4 YGL185C) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2999.9481 3410 moveto 260 (MSC7 LYS1 ECM4 GTO1 TSA2 OSI1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2994.9481 3393 moveto 270 (IRC24 MIS1 BDH2 DSF1 SDH2 GPD1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2988.4481 3376 moveto 283 (YMR315W YPR127W YJR096W MET16) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3000.4481 3359 moveto 259 (PUT1 ALD5 YJR149W SER33 GDH3) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2993.4481 3342 moveto 273 (GCY1 GDH1 COX6 PST2 CIR2 AAD15) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2994.9481 3325 moveto 270 (CTA1 NDE2 FMO1 RNR3 FAS1 ADH5) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3026.9481 3308 moveto 206 (PRX1 LIA1 RIP1 SDH1 FRE5) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2999.9481 3291 moveto 260 (YGL039W IMD2 GOR1 MDH1 KGD1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3003.4481 3274 moveto 253 (GDH2 ARA1 ZWF1 PDA1 YPL113C) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3004.9481 3257 moveto 250 (GRE2 FMP46 YDL114W YKL069W) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3002.9481 3240 moveto 254 (IRC15 YKL107W IMD4 ADH4 ETR1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3000.4481 3223 moveto 259 (OYE3 JHD2 FRE3 SDH9 ZTA1 FRE7) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2999.9481 3206 moveto 260 (NDE1 FRE4 MET5 COX12 YNL134C) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2989.9481 3189 moveto 280 (MAN2 COQ6 IDH2 ERG11 HFD1 AST2) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3007.4481 3172 moveto 245 (TDH2 YPL088W CTT1 TRR2 IDH1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2994.9481 3155 moveto 270 (BNA4 LEU2 SRX1 ALD2 GRX1 GND2) alignedtext
+grestore
+% node5->node8
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2537.1689 4236.9507 moveto
+2597.3605 4145.67 2849.2439 3763.6885 3004.6581 3528.0025 curveto
+stroke
+grestore
+% node11
+gsave
+0.33333 1 1 nodecolor
+newpath 738.4481 3375 moveto
+595.4481 3375 lineto
+595.4481 3299 lineto
+738.4481 3299 lineto
+closepath fill
+1 setlinewidth
+filled
+0.33333 1 1 nodecolor
+newpath 738.4481 3375 moveto
+595.4481 3375 lineto
+595.4481 3299 lineto
+738.4481 3299 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+608.9481 3359 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+636.4481 3342 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+603.4481 3325 moveto 127 (acting on CH-OH) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+607.4481 3308 moveto 119 (group of donors) alignedtext
+grestore
+% node5->node11
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2483.435 4236.9507 moveto
+2247.0729 4119.9788 1046.1105 3525.6415 738.7005 3373.5091 curveto
+stroke
+grestore
+% node15
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1292.4481 3383.5 moveto
+1159.4481 3383.5 lineto
+1159.4481 3290.5 lineto
+1292.4481 3290.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1292.4481 3383.5 moveto
+1159.4481 3383.5 lineto
+1159.4481 3290.5 lineto
+1292.4481 3290.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1167.9481 3367.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1195.4481 3350.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1175.9481 3333.5 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1167.4481 3316.5 moveto 117 (CH-CH group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1199.9481 3299.5 moveto 52 (donors) alignedtext
+grestore
+% node5->node15
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2495.6304 4236.9507 moveto
+2333.8945 4122.4397 1525.9957 3550.4374 1290.4799 3383.6893 curveto
+stroke
+grestore
+% node18
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1856.9481 3383.5 moveto
+1724.9481 3383.5 lineto
+1724.9481 3290.5 lineto
+1856.9481 3290.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1856.9481 3383.5 moveto
+1724.9481 3383.5 lineto
+1724.9481 3290.5 lineto
+1856.9481 3290.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1732.9481 3367.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1760.4481 3350.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1748.4481 3333.5 moveto 85 (acting on a) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1735.4481 3316.5 moveto 111 (sulfur group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1764.9481 3299.5 moveto 52 (donors) alignedtext
+grestore
+% node5->node18
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2507.9567 4236.9507 moveto
+2416.622 4122.4397 1960.3895 3550.4374 1827.3902 3383.6893 curveto
+stroke
+grestore
+% node26
+gsave
+0.62353 0.71765 1 nodecolor
+newpath 2219.4481 3383.5 moveto
+2082.4481 3383.5 lineto
+2082.4481 3290.5 lineto
+2219.4481 3290.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.62353 0.71765 1 nodecolor
+newpath 2219.4481 3383.5 moveto
+2082.4481 3383.5 lineto
+2082.4481 3290.5 lineto
+2219.4481 3290.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2092.9481 3367.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2120.4481 3350.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2100.9481 3333.5 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2090.4481 3316.5 moveto 121 (aldehyde or oxo) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2091.4481 3299.5 moveto 119 (group of donors) alignedtext
+grestore
+% node5->node26
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2515.8106 4236.9507 moveto
+2469.3333 4122.4397 2237.1713 3550.4374 2169.4923 3383.6893 curveto
+stroke
+grestore
+% node38
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2961.9481 3383.5 moveto
+2829.9481 3383.5 lineto
+2829.9481 3290.5 lineto
+2961.9481 3290.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2961.9481 3383.5 moveto
+2829.9481 3383.5 lineto
+2829.9481 3290.5 lineto
+2961.9481 3290.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2837.9481 3367.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2865.4481 3350.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2860.4481 3333.5 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2851.9481 3316.5 moveto 88 (peroxide as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2862.9481 3299.5 moveto 66 (acceptor) alignedtext
+grestore
+% node5->node38
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2532.2969 4236.7398 moveto
+2567.6019 4151.0155 2708.0144 3809.5893 2820.9481 3528 curveto
+2840.6831 3478.7927 2862.9461 3422.2608 2878.0541 3383.7408 curveto
+stroke
+grestore
+% node52
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2509.9481 3358 moveto
+2397.9481 3358 lineto
+2397.9481 3316 lineto
+2509.9481 3316 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2509.9481 3358 moveto
+2397.9481 3358 lineto
+2397.9481 3316 lineto
+2509.9481 3316 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2405.9481 3342 moveto 96 (dioxygenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2425.4481 3325 moveto 57 (activity) alignedtext
+grestore
+% node5->node52
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2522.421 4236.9507 moveto
+2513.1739 4115.5493 2464.76 3479.944 2455.4851 3358.1785 curveto
+stroke
+grestore
+% node57
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2661.4481 3375 moveto
+2528.4481 3375 lineto
+2528.4481 3299 lineto
+2661.4481 3299 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2661.4481 3375 moveto
+2528.4481 3375 lineto
+2528.4481 3299 lineto
+2661.4481 3299 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2536.9481 3359 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2564.4481 3342 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2536.4481 3325 moveto 117 (acting on CH or) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2550.9481 3308 moveto 88 (CH2 groups) alignedtext
+grestore
+% node5->node57
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2525.4971 4236.9507 moveto
+2534.5011 4120.4054 2580.117 3529.9697 2592.0748 3375.191 curveto
+stroke
+grestore
+% node62
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2811.9481 3417.5 moveto
+2679.9481 3417.5 lineto
+2679.9481 3256.5 lineto
+2811.9481 3256.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2811.9481 3417.5 moveto
+2679.9481 3417.5 lineto
+2679.9481 3256.5 lineto
+2811.9481 3256.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2687.9481 3401.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2715.4481 3384.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2710.4481 3367.5 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2691.4481 3350.5 moveto 109 (paired donors,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2729.4481 3333.5 moveto 33 (with) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2695.4481 3316.5 moveto 101 (incorporation) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2690.4481 3299.5 moveto 111 (or reduction of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2708.4481 3282.5 moveto 75 (molecular) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2717.9481 3265.5 moveto 56 (oxygen) alignedtext
+grestore
+% node5->node62
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2528.7914 4236.9507 moveto
+2554.8048 4129.2644 2678.5525 3616.9937 2726.71 3417.6391 curveto
+stroke
+grestore
+% node64
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3520.9481 3366.5 moveto
+3442.9481 3366.5 lineto
+3442.9481 3307.5 lineto
+3520.9481 3307.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3520.9481 3366.5 moveto
+3442.9481 3366.5 lineto
+3442.9481 3307.5 lineto
+3520.9481 3307.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+3450.9481 3350.5 moveto 62 (electron) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3452.4481 3333.5 moveto 59 (transfer) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3453.4481 3316.5 moveto 57 (activity) alignedtext
+grestore
+% node5->node64
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2559.8918 4236.8551 moveto
+2691.8794 4161.1704 3155.2949 3880.1 3408.9481 3528 curveto
+3445.5077 3477.251 3466.4094 3405.8503 3475.828 3366.6154 curveto
+stroke
+grestore
+% node6->node5
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2875.668 4526.9771 moveto
+2806.4375 4474.23 2619.6228 4331.895 2550.3052 4279.0816 curveto
+stroke
+grestore
+% node9
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 574.4481 1374 moveto
+441.4481 1374 lineto
+441.4481 1298 lineto
+574.4481 1298 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 574.4481 1374 moveto
+441.4481 1374 lineto
+441.4481 1298 lineto
+574.4481 1298 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+463.9481 1358 moveto 88 (aryl-alcohol) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+449.4481 1341 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+474.4481 1324 moveto 67 (\(NADP+\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+479.4481 1307 moveto 57 (activity) alignedtext
+grestore
+% node12
+gsave
+0 0 0.65098 nodecolor
+newpath 602.9481 843 moveto
+402.9481 843 lineto
+402.9481 807 lineto
+602.9481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 602.9481 843 moveto
+402.9481 843 lineto
+402.9481 807 lineto
+602.9481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+410.9481 821.5 moveto 184 (AAD10 AAD15 YPL088W) alignedtext
+grestore
+% node9->node12
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 507.5845 1297.984 moveto
+506.5867 1196.4106 503.8329 916.0649 503.119 843.3898 curveto
+stroke
+grestore
+% node10
+gsave
+0.49804 1 1 nodecolor
+newpath 734.4481 2131.5 moveto
+599.4481 2131.5 lineto
+599.4481 2004.5 lineto
+734.4481 2004.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.49804 1 1 nodecolor
+newpath 734.4481 2131.5 moveto
+599.4481 2131.5 lineto
+599.4481 2004.5 lineto
+734.4481 2004.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+608.9481 2115.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+636.4481 2098.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+616.9481 2081.5 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+607.4481 2064.5 moveto 119 (CH-OH group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+610.4481 2047.5 moveto 113 (donors, NAD or) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+634.9481 2030.5 moveto 64 (NADP as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+633.9481 2013.5 moveto 66 (acceptor) alignedtext
+grestore
+% node10->node9
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 653.3231 2004.445 moveto
+621.2446 1857.1664 541.7334 1492.1148 516.0725 1374.3004 curveto
+stroke
+grestore
+% node21
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 740.9481 1374 moveto
+592.9481 1374 lineto
+592.9481 1298 lineto
+740.9481 1298 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 740.9481 1374 moveto
+592.9481 1374 lineto
+592.9481 1298 lineto
+740.9481 1298 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+621.4481 1358 moveto 91 (D-arabinose) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+600.9481 1341 moveto 132 (1-dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+627.4481 1324 moveto 79 ([NAD\(P\)+]) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+638.4481 1307 moveto 57 (activity) alignedtext
+grestore
+% node10->node21
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 666.9481 2004.445 moveto
+666.9481 1857.1664 666.9481 1492.1148 666.9481 1374.3004 curveto
+stroke
+grestore
+% node23
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 906.9481 1365.5 moveto
+758.9481 1365.5 lineto
+758.9481 1306.5 lineto
+906.9481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 906.9481 1365.5 moveto
+758.9481 1365.5 lineto
+758.9481 1306.5 lineto
+906.9481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+787.4481 1349.5 moveto 91 (D-arabinose) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+766.9481 1332.5 moveto 132 (1-dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+779.9481 1315.5 moveto 106 (\(NAD\) activity) alignedtext
+grestore
+% node10->node23
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 681.173 2004.445 moveto
+715.5275 1853.3679 801.9904 1473.1396 826.425 1365.6859 curveto
+stroke
+grestore
+% node11->node10
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 666.9481 3298.7673 moveto
+666.9481 3120.8591 666.9481 2356.7185 666.9481 2131.6233 curveto
+stroke
+grestore
+% node48
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 492.9481 2140 moveto
+354.9481 2140 lineto
+354.9481 1996 lineto
+492.9481 1996 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 492.9481 2140 moveto
+354.9481 2140 lineto
+354.9481 1996 lineto
+492.9481 1996 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+365.9481 2124 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+393.4481 2107 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+373.9481 2090 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+364.4481 2073 moveto 119 (CH-OH group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+362.9481 2056 moveto 122 (donors, quinone) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+388.9481 2039 moveto 70 (or similar) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+373.4481 2022 moveto 101 (compound as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+390.9481 2005 moveto 66 (acceptor) alignedtext
+grestore
+% node11->node48
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 659.8072 3298.7673 moveto
+626.0975 3123.005 482.6493 2375.0674 437.5657 2140.002 curveto
+stroke
+grestore
+% node13
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1062.4481 1374 moveto
+925.4481 1374 lineto
+925.4481 1298 lineto
+1062.4481 1298 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1062.4481 1374 moveto
+925.4481 1374 lineto
+925.4481 1298 lineto
+1062.4481 1298 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+933.4481 1358 moveto 121 (2,4-dienoyl-CoA) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+956.4481 1341 moveto 75 (reductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+960.9481 1324 moveto 66 (\(NADPH\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+965.4481 1307 moveto 57 (activity) alignedtext
+grestore
+% node16
+gsave
+0 0 0.65098 nodecolor
+newpath 1026.4481 843 moveto
+961.4481 843 lineto
+961.4481 807 lineto
+1026.4481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 1026.4481 843 moveto
+961.4481 843 lineto
+961.4481 807 lineto
+1026.4481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+969.4481 821.5 moveto 49 (SPS19) alignedtext
+grestore
+% node13->node16
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 993.9481 1297.984 moveto
+993.9481 1196.4106 993.9481 916.0649 993.9481 843.3898 curveto
+stroke
+grestore
+% node14
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1124.4481 2131.5 moveto
+991.4481 2131.5 lineto
+991.4481 2004.5 lineto
+1124.4481 2004.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1124.4481 2131.5 moveto
+991.4481 2131.5 lineto
+991.4481 2004.5 lineto
+1124.4481 2004.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+999.9481 2115.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1027.4481 2098.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1007.9481 2081.5 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+999.4481 2064.5 moveto 117 (CH-CH group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1001.4481 2047.5 moveto 113 (donors, NAD or) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1025.9481 2030.5 moveto 64 (NADP as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1024.9481 2013.5 moveto 66 (acceptor) alignedtext
+grestore
+% node14->node13
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1052.4639 2004.445 moveto
+1039.5518 1857.1664 1007.5472 1492.1148 997.2183 1374.3004 curveto
+stroke
+grestore
+% node15->node14
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1219.8697 3290.1583 moveto
+1194.3244 3097.5047 1095.6332 2353.2081 1066.2486 2131.5997 curveto
+stroke
+grestore
+% node17
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1339.9481 2131.5 moveto
+1207.9481 2131.5 lineto
+1207.9481 2004.5 lineto
+1339.9481 2004.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1339.9481 2131.5 moveto
+1207.9481 2131.5 lineto
+1207.9481 2004.5 lineto
+1339.9481 2004.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1215.9481 2115.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1243.4481 2098.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1231.4481 2081.5 moveto 85 (acting on a) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1218.4481 2064.5 moveto 111 (sulfur group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1245.9481 2047.5 moveto 56 (donors,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1230.9481 2030.5 moveto 86 (disulfide as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1240.9481 2013.5 moveto 66 (acceptor) alignedtext
+grestore
+% node19
+gsave
+0 0 0.65098 nodecolor
+newpath 1248.9481 843 moveto
+1188.9481 843 lineto
+1188.9481 807 lineto
+1248.9481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 1248.9481 843 moveto
+1188.9481 843 lineto
+1188.9481 807 lineto
+1248.9481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+1196.9481 821.5 moveto 44 (MXR2) alignedtext
+grestore
+% node17->node19
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1273.3923 2004.4758 moveto
+1271.9863 1872.3732 1267.3872 1555.1641 1253.9481 1289.5 curveto
+1245.1214 1115.0123 1226.1918 904.1526 1220.5603 843.2367 curveto
+stroke
+grestore
+% node20
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1245.4481 1374 moveto
+1080.4481 1374 lineto
+1080.4481 1298 lineto
+1245.4481 1298 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1245.4481 1374 moveto
+1080.4481 1374 lineto
+1080.4481 1298 lineto
+1245.4481 1298 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1088.4481 1358 moveto 149 (peptide-methionine) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1120.4481 1341 moveto 85 (\(R\)-S-oxide) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1125.4481 1324 moveto 75 (reductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1134.4481 1307 moveto 57 (activity) alignedtext
+grestore
+% node17->node20
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1264.4363 2004.445 moveto
+1242.0419 1857.1664 1186.5341 1492.1148 1168.6198 1374.3004 curveto
+stroke
+grestore
+% node18->node17
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1772.2424 3290.1583 moveto
+1693.63 3097.5047 1389.9194 2353.2081 1299.492 2131.5997 curveto
+stroke
+grestore
+% node20->node19
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1167.0206 1297.984 moveto
+1178.1957 1196.4106 1209.0392 916.0649 1217.0349 843.3898 curveto
+stroke
+grestore
+% node22
+gsave
+0 0 0.65098 nodecolor
+newpath 722.9481 843 moveto
+620.9481 843 lineto
+620.9481 807 lineto
+722.9481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 722.9481 843 moveto
+620.9481 843 lineto
+620.9481 807 lineto
+722.9481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+628.9481 821.5 moveto 86 (ARA2 ARA1) alignedtext
+grestore
+% node21->node22
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 667.3117 1297.984 moveto
+668.3095 1196.4106 671.0634 916.0649 671.7773 843.3898 curveto
+stroke
+grestore
+% node24
+gsave
+0 0 0.65098 nodecolor
+newpath 861.4481 843 moveto
+804.4481 843 lineto
+804.4481 807 lineto
+861.4481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 861.4481 843 moveto
+804.4481 843 lineto
+804.4481 807 lineto
+861.4481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+812.4481 821.5 moveto 41 (ARA2) alignedtext
+grestore
+% node23->node24
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 832.9481 1306.1756 moveto
+832.9481 1212.3799 832.9481 917.6346 832.9481 843.2041 curveto
+stroke
+grestore
+% node25
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2120.4481 2140 moveto
+1983.4481 2140 lineto
+1983.4481 1996 lineto
+2120.4481 1996 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2120.4481 2140 moveto
+1983.4481 2140 lineto
+1983.4481 1996 lineto
+2120.4481 1996 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1993.9481 2124 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2021.4481 2107 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2001.9481 2090 moveto 100 (acting on the) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1991.4481 2073 moveto 121 (aldehyde or oxo) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2019.9481 2056 moveto 64 (group of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1995.4481 2039 moveto 113 (donors, NAD or) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2019.9481 2022 moveto 64 (NADP as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2018.9481 2005 moveto 66 (acceptor) alignedtext
+grestore
+% node27
+gsave
+0 0 0.65098 nodecolor
+newpath 1803.9481 1357 moveto
+1553.9481 1357 lineto
+1553.9481 1315 lineto
+1803.9481 1315 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 1803.9481 1357 moveto
+1553.9481 1357 lineto
+1553.9481 1315 lineto
+1803.9481 1315 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+1561.9481 1341 moveto 234 (TDH1 ALD4 ALD3 ARG56 UGA2) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+1567.4481 1324 moveto 223 (MSC7 ALD5 HFD1 TDH2 ALD2) alignedtext
+grestore
+% node25->node27
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2015.5042 1995.6754 moveto
+1933.1964 1834.5905 1736.4214 1449.4812 1689.2425 1357.1471 curveto
+stroke
+grestore
+% node29
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2055.4481 1382.5 moveto
+1822.4481 1382.5 lineto
+1822.4481 1289.5 lineto
+2055.4481 1289.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2055.4481 1382.5 moveto
+1822.4481 1382.5 lineto
+1822.4481 1289.5 lineto
+2055.4481 1289.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1830.4481 1366.5 moveto 217 (glyceraldehyde-3-phosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1880.4481 1349.5 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1899.4481 1332.5 moveto 79 (\(NAD\(P\)+\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1870.9481 1315.5 moveto 136 (\(phosphorylating\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1910.4481 1298.5 moveto 57 (activity) alignedtext
+grestore
+% node25->node29
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2040.9075 1995.6754 moveto
+2017.8606 1846.7885 1965.189 1506.5206 1946.0586 1382.9348 curveto
+stroke
+grestore
+% node31
+gsave
+0.62353 0.71765 1 nodecolor
+newpath 2206.4481 1365.5 moveto
+2073.4481 1365.5 lineto
+2073.4481 1306.5 lineto
+2206.4481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.62353 0.71765 1 nodecolor
+newpath 2206.4481 1365.5 moveto
+2073.4481 1365.5 lineto
+2073.4481 1306.5 lineto
+2206.4481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2104.9481 1349.5 moveto 70 (aldehyde) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2081.4481 1332.5 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2086.9481 1315.5 moveto 106 (\(NAD\) activity) alignedtext
+grestore
+% node25->node31
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2060.5462 1995.6754 moveto
+2079.424 1839.0751 2123.8248 1470.7502 2136.5091 1365.5284 curveto
+stroke
+grestore
+% node33
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2357.4481 1374 moveto
+2224.4481 1374 lineto
+2224.4481 1298 lineto
+2357.4481 1298 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2357.4481 1374 moveto
+2224.4481 1374 lineto
+2224.4481 1298 lineto
+2357.4481 1298 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2255.9481 1358 moveto 70 (aldehyde) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2232.4481 1341 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2251.4481 1324 moveto 79 ([NAD\(P\)+]) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2262.4481 1307 moveto 57 (activity) alignedtext
+grestore
+% node25->node33
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2075.2996 1995.6754 moveto
+2125.2193 1843.2009 2240.8528 1490.011 2278.7087 1374.3841 curveto
+stroke
+grestore
+% node50
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1535.4481 1382.5 moveto
+1302.4481 1382.5 lineto
+1302.4481 1289.5 lineto
+1535.4481 1289.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1535.4481 1382.5 moveto
+1302.4481 1382.5 lineto
+1302.4481 1289.5 lineto
+1535.4481 1289.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1310.4481 1366.5 moveto 217 (glyceraldehyde-3-phosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1360.4481 1349.5 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1389.9481 1332.5 moveto 58 (\(NAD+\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1334.4481 1315.5 moveto 169 (\(non-phosphorylating\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1390.4481 1298.5 moveto 57 (activity) alignedtext
+grestore
+% node25->node50
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1990.1009 1995.6754 moveto
+1860.9976 1846.7885 1565.9433 1506.5206 1458.7793 1382.9348 curveto
+stroke
+grestore
+% node26->node25
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2147.3662 3290.1583 moveto
+2132.5034 3099.9448 2075.6217 2371.9734 2057.5169 2140.2694 curveto
+stroke
+grestore
+% node28
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 1982.4481 871.5 moveto
+1749.4481 871.5 lineto
+1749.4481 778.5 lineto
+1982.4481 778.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 1982.4481 871.5 moveto
+1749.4481 871.5 lineto
+1749.4481 778.5 lineto
+1982.4481 778.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+1757.4481 855.5 moveto 217 (glyceraldehyde-3-phosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1807.4481 838.5 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1836.9481 821.5 moveto 58 (\(NAD+\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1797.9481 804.5 moveto 136 (\(phosphorylating\)) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+1837.4481 787.5 moveto 57 (activity) alignedtext
+grestore
+% node30
+gsave
+0 0 0.65098 nodecolor
+newpath 1917.9481 395 moveto
+1813.9481 395 lineto
+1813.9481 359 lineto
+1917.9481 359 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 1917.9481 395 moveto
+1813.9481 395 lineto
+1813.9481 359 lineto
+1917.9481 359 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+1821.9481 373.5 moveto 88 (TDH1 TDH2) alignedtext
+grestore
+% node28->node30
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1865.9481 778.3661 moveto
+1865.9481 681.3467 1865.9481 458.2802 1865.9481 395.0105 curveto
+stroke
+grestore
+% node29->node28
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1932.4056 1289.3817 moveto
+1918.5472 1192.7526 1886.3708 968.3991 1872.5022 871.699 curveto
+stroke
+grestore
+% node32
+gsave
+0 0 0.65098 nodecolor
+newpath 2276.9481 854.5 moveto
+2000.9481 854.5 lineto
+2000.9481 795.5 lineto
+2276.9481 795.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2276.9481 854.5 moveto
+2000.9481 854.5 lineto
+2000.9481 795.5 lineto
+2276.9481 795.5 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2012.4481 838.5 moveto 253 (ALD4 ALD3 MSC7 ALD5 YGL039W) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2008.9481 821.5 moveto 260 (YKL107W YNL134C YLL056C HFD1) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2118.9481 804.5 moveto 40 (ALD2) alignedtext
+grestore
+% node31->node32
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2139.8915 1306.1756 moveto
+2139.7155 1216.586 2139.1793 943.665 2139.0041 854.5083 curveto
+stroke
+grestore
+% node34
+gsave
+0 0 0.65098 nodecolor
+newpath 2396.4481 843 moveto
+2295.4481 843 lineto
+2295.4481 807 lineto
+2396.4481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2396.4481 843 moveto
+2295.4481 843 lineto
+2295.4481 807 lineto
+2396.4481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2303.4481 821.5 moveto 85 (ALD4 ALD5) alignedtext
+grestore
+% node33->node34
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2294.9479 1297.984 moveto
+2305.9234 1196.4106 2336.2162 916.0649 2344.0691 843.3898 curveto
+stroke
+grestore
+% node35
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3365.9481 1365.5 moveto
+3261.9481 1365.5 lineto
+3261.9481 1306.5 lineto
+3365.9481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3365.9481 1365.5 moveto
+3261.9481 1365.5 lineto
+3261.9481 1306.5 lineto
+3365.9481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+3269.9481 1349.5 moveto 88 (glutathione) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3272.4481 1332.5 moveto 83 (peroxidase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3285.4481 1315.5 moveto 57 (activity) alignedtext
+grestore
+% node39
+gsave
+0 0 0.65098 nodecolor
+newpath 3387.4481 843 moveto
+3240.4481 843 lineto
+3240.4481 807 lineto
+3387.4481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 3387.4481 843 moveto
+3240.4481 843 lineto
+3240.4481 807 lineto
+3387.4481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3248.4481 821.5 moveto 131 (GPX1 GTT1 GRX1) alignedtext
+grestore
+% node35->node39
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3313.9481 1306.1756 moveto
+3313.9481 1212.3799 3313.9481 917.6346 3313.9481 843.2041 curveto
+stroke
+grestore
+% node36
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3233.4481 2089 moveto
+3134.4481 2089 lineto
+3134.4481 2047 lineto
+3233.4481 2047 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3233.4481 2089 moveto
+3134.4481 2089 lineto
+3134.4481 2047 lineto
+3233.4481 2047 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+3142.4481 2073 moveto 83 (peroxidase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3155.4481 2056 moveto 57 (activity) alignedtext
+grestore
+% node36->node35
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3187.5608 2046.7137 moveto
+3205.7682 1944.472 3287.4422 1485.841 3308.8157 1365.8206 curveto
+stroke
+grestore
+% node42
+gsave
+0 0 0.65098 nodecolor
+newpath 3243.4481 1354 moveto
+3012.4481 1354 lineto
+3012.4481 1318 lineto
+3243.4481 1318 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 3243.4481 1354 moveto
+3012.4481 1354 lineto
+3012.4481 1318 lineto
+3243.4481 1318 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3020.4481 1332.5 moveto 215 (GPX1 TSA2 CTA1 PRX1 CTT1) alignedtext
+grestore
+% node36->node42
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3182.3919 2046.7137 moveto
+3174.2661 1940.7876 3136.7949 1452.3237 3129.2674 1354.1971 curveto
+stroke
+grestore
+% node37->node36
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3346.3231 3315.8426 moveto
+3326.9265 3166.9009 3206.0595 2238.7885 3186.5932 2089.3112 curveto
+stroke
+grestore
+% node40
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3388.4481 2089 moveto
+3267.4481 2089 lineto
+3267.4481 2047 lineto
+3388.4481 2047 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3388.4481 2089 moveto
+3267.4481 2089 lineto
+3267.4481 2047 lineto
+3388.4481 2047 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+3275.4481 2073 moveto 105 (peroxiredoxin) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+3299.4481 2056 moveto 57 (activity) alignedtext
+grestore
+% node37->node40
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3348.614 3315.8426 moveto
+3346.1454 3166.9009 3330.7623 2238.7885 3328.2848 2089.3112 curveto
+stroke
+grestore
+% node38->node36
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2906.3683 3290.1583 moveto
+2953.6141 3082.3098 3146.813 2232.3687 3179.3007 2089.4455 curveto
+stroke
+grestore
+% node38->node40
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2911.5785 3290.1583 moveto
+2982.4471 3082.3098 3272.2454 2232.3687 3320.977 2089.4455 curveto
+stroke
+grestore
+% node43
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 3085.4481 2106 moveto
+2856.4481 2106 lineto
+2856.4481 2030 lineto
+3085.4481 2030 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 3085.4481 2106 moveto
+2856.4481 2106 lineto
+2856.4481 2030 lineto
+3085.4481 2030 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2864.4481 2090 moveto 213 (phospholipid-hydroperoxide) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2926.9481 2073 moveto 88 (glutathione) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2929.4481 2056 moveto 83 (peroxidase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2942.4481 2039 moveto 57 (activity) alignedtext
+grestore
+% node38->node43
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2898.6617 3290.1583 moveto
+2910.5517 3089.2973 2957.9377 2288.7896 2968.7457 2106.2057 curveto
+stroke
+grestore
+% node41
+gsave
+0 0 0.65098 nodecolor
+newpath 3529.4481 1354 moveto
+3384.4481 1354 lineto
+3384.4481 1318 lineto
+3529.4481 1318 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 3529.4481 1354 moveto
+3384.4481 1354 lineto
+3384.4481 1318 lineto
+3529.4481 1318 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3392.4481 1332.5 moveto 129 (GPX1 TSA2 PRX1) alignedtext
+grestore
+% node40->node41
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3331.533 2046.7137 moveto
+3350.2514 1940.7876 3436.569 1452.3237 3453.9092 1354.1971 curveto
+stroke
+grestore
+% node44
+gsave
+0 0 0.65098 nodecolor
+newpath 2994.4481 1354 moveto
+2937.4481 1354 lineto
+2937.4481 1318 lineto
+2994.4481 1318 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2994.4481 1354 moveto
+2937.4481 1354 lineto
+2937.4481 1318 lineto
+2994.4481 1318 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2945.4481 1332.5 moveto 41 (GPX1) alignedtext
+grestore
+% node43->node44
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2970.6933 2029.7956 moveto
+2969.7819 1896.7253 2966.704 1447.3606 2966.0649 1354.053 curveto
+stroke
+grestore
+% node45
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 324.4481 406.5 moveto
+19.4481 406.5 lineto
+19.4481 347.5 lineto
+324.4481 347.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 324.4481 406.5 moveto
+19.4481 406.5 lineto
+19.4481 347.5 lineto
+324.4481 347.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+27.4481 390.5 moveto 289 (sn-glycerol-3-phosphate:ubiquinone-8) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+113.9481 373.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+143.4481 356.5 moveto 57 (activity) alignedtext
+grestore
+% node49
+gsave
+0 0 0.65098 nodecolor
+newpath 200.9481 85 moveto
+142.9481 85 lineto
+142.9481 49 lineto
+200.9481 49 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 200.9481 85 moveto
+142.9481 85 lineto
+142.9481 49 lineto
+200.9481 49 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+150.9481 63.5 moveto 42 (GUT2) alignedtext
+grestore
+% node45->node49
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 171.9481 347.3007 moveto
+171.9481 284.2801 171.9481 135.4058 171.9481 85.0145 curveto
+stroke
+grestore
+% node46
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 316.9481 854.5 moveto
+26.9481 854.5 lineto
+26.9481 795.5 lineto
+316.9481 795.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 316.9481 854.5 moveto
+26.9481 854.5 lineto
+26.9481 795.5 lineto
+316.9481 795.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+34.9481 838.5 moveto 274 (sn-glycerol-3-phosphate:ubiquinone) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+113.9481 821.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+143.4481 804.5 moveto 57 (activity) alignedtext
+grestore
+% node46->node45
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 171.9481 795.4222 moveto
+171.9481 714.9616 171.9481 487.1493 171.9481 406.6277 curveto
+stroke
+grestore
+% node46->node49
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 149.6842 795.3964 moveto
+95.301 721.9769 -36.5579 520.4781 9.9481 347.5 curveto
+39.4359 237.821 123.6374 126.7728 157.5432 85.1484 curveto
+stroke
+grestore
+% node47
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 422.9481 1365.5 moveto
+246.9481 1365.5 lineto
+246.9481 1306.5 lineto
+422.9481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 422.9481 1365.5 moveto
+246.9481 1365.5 lineto
+246.9481 1306.5 lineto
+422.9481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+254.9481 1349.5 moveto 160 (glycerol-3-phosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+276.4481 1332.5 moveto 117 (dehydrogenase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+306.4481 1315.5 moveto 57 (activity) alignedtext
+grestore
+% node47->node46
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 325.7175 1306.1756 moveto
+297.0277 1216.586 209.6287 943.665 181.0775 854.5083 curveto
+stroke
+grestore
+% node47->node49
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 340.1442 1306.4186 moveto
+360.828 1186.688 431.5334 714.6662 332.9481 347.5 curveto
+303.542 237.9811 219.9187 126.8398 186.251 85.1694 curveto
+stroke
+grestore
+% node48->node47
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 415.2524 1995.6754 moveto
+396.16 1839.0751 351.2547 1470.7502 338.4262 1365.5284 curveto
+stroke
+grestore
+% node51
+gsave
+0 0 0.65098 nodecolor
+newpath 1491.9481 843 moveto
+1345.9481 843 lineto
+1345.9481 807 lineto
+1491.9481 807 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 1491.9481 843 moveto
+1345.9481 843 lineto
+1345.9481 807 lineto
+1491.9481 807 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+1353.9481 821.5 moveto 130 (ALD3 HFD1 ALD2) alignedtext
+grestore
+% node50->node51
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1418.9481 1289.3817 moveto
+1418.9481 1181.284 1418.9481 913.3443 1418.9481 843.0894 curveto
+stroke
+grestore
+% node53
+gsave
+0 0 0.65098 nodecolor
+newpath 2535.9481 2086 moveto
+2383.9481 2086 lineto
+2383.9481 2050 lineto
+2535.9481 2050 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2535.9481 2086 moveto
+2383.9481 2086 lineto
+2383.9481 2050 lineto
+2535.9481 2050 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2391.9481 2064.5 moveto 136 (AIM17 BNA2 JHD2) alignedtext
+grestore
+% node52->node53
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2454.0436 3315.8426 moveto
+2454.7542 3165.793 2459.2097 2224.9371 2459.8671 2086.1053 curveto
+stroke
+grestore
+% node54
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2749.9481 880 moveto
+2523.9481 880 lineto
+2523.9481 770 lineto
+2749.9481 770 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2749.9481 880 moveto
+2523.9481 880 lineto
+2523.9481 770 lineto
+2749.9481 770 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2531.9481 864 moveto 210 (ribonucleoside-diphosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2599.4481 847 moveto 75 (reductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2606.4481 830 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2593.4481 813 moveto 87 (thioredoxin) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2593.9481 796 moveto 86 (disulfide as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2603.9481 779 moveto 66 (acceptor) alignedtext
+grestore
+% node58
+gsave
+0 0 0.65098 nodecolor
+newpath 2689.4481 395 moveto
+2584.4481 395 lineto
+2584.4481 359 lineto
+2689.4481 359 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2689.4481 395 moveto
+2584.4481 395 lineto
+2584.4481 359 lineto
+2689.4481 359 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2592.4481 373.5 moveto 89 (RNR4 RNR3) alignedtext
+grestore
+% node54->node58
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2636.9481 769.7575 moveto
+2636.9481 668.7732 2636.9481 456.5986 2636.9481 395.0645 curveto
+stroke
+grestore
+% node55
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2749.9481 1365.5 moveto
+2523.9481 1365.5 lineto
+2523.9481 1306.5 lineto
+2749.9481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2749.9481 1365.5 moveto
+2523.9481 1365.5 lineto
+2523.9481 1306.5 lineto
+2749.9481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2531.9481 1349.5 moveto 210 (ribonucleoside-diphosphate) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2599.4481 1332.5 moveto 75 (reductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2608.4481 1315.5 moveto 57 (activity) alignedtext
+grestore
+% node55->node54
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2636.9481 1306.1756 moveto
+2636.9481 1223.9466 2636.9481 987.2737 2636.9481 880.0013 curveto
+stroke
+grestore
+% node56
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2687.4481 2123 moveto
+2554.4481 2123 lineto
+2554.4481 2013 lineto
+2687.4481 2013 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2687.4481 2123 moveto
+2554.4481 2123 lineto
+2554.4481 2013 lineto
+2687.4481 2013 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2562.9481 2107 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2590.4481 2090 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2562.4481 2073 moveto 117 (acting on CH or) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2574.4481 2056 moveto 93 (CH2 groups,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2577.9481 2039 moveto 86 (disulfide as) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2587.9481 2022 moveto 66 (acceptor) alignedtext
+grestore
+% node56->node55
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2622.1377 2012.7277 moveto
+2625.3134 1867.8349 2633.9129 1475.4823 2636.3165 1365.8202 curveto
+stroke
+grestore
+% node57->node56
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2595.7122 3298.7673 moveto
+2599.4091 3118.611 2615.4421 2337.3129 2619.8328 2123.3506 curveto
+stroke
+grestore
+% node59
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2919.9481 854.5 moveto
+2805.9481 854.5 lineto
+2805.9481 795.5 lineto
+2919.9481 795.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2919.9481 854.5 moveto
+2805.9481 854.5 lineto
+2805.9481 795.5 lineto
+2919.9481 795.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2814.9481 838.5 moveto 96 (stearoyl-CoA) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2813.9481 821.5 moveto 98 (9-desaturase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2834.4481 804.5 moveto 57 (activity) alignedtext
+grestore
+% node63
+gsave
+0 0 0.65098 nodecolor
+newpath 2847.9481 395 moveto
+2791.9481 395 lineto
+2791.9481 359 lineto
+2847.9481 359 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 2847.9481 395 moveto
+2791.9481 395 lineto
+2791.9481 359 lineto
+2847.9481 359 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+2799.9481 373.5 moveto 40 (OLE1) alignedtext
+grestore
+% node59->node63
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2860.1929 795.4222 moveto
+2852.0369 710.828 2828.1772 463.3532 2821.628 395.4238 curveto
+stroke
+grestore
+% node60
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2908.4481 1365.5 moveto
+2809.4481 1365.5 lineto
+2809.4481 1306.5 lineto
+2908.4481 1306.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2908.4481 1365.5 moveto
+2809.4481 1365.5 lineto
+2809.4481 1306.5 lineto
+2908.4481 1306.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2825.4481 1349.5 moveto 67 (acyl-CoA) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2817.4481 1332.5 moveto 83 (desaturase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2830.4481 1315.5 moveto 57 (activity) alignedtext
+grestore
+% node60->node59
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2859.1746 1306.1756 moveto
+2859.8787 1216.586 2862.0235 943.665 2862.7241 854.5083 curveto
+stroke
+grestore
+% node61
+gsave
+0.090196 0.38824 0.93333 nodecolor
+newpath 2837.9481 2182.5 moveto
+2705.9481 2182.5 lineto
+2705.9481 1953.5 lineto
+2837.9481 1953.5 lineto
+closepath fill
+1 setlinewidth
+filled
+0.090196 0.38824 0.93333 nodecolor
+newpath 2837.9481 2182.5 moveto
+2705.9481 2182.5 lineto
+2705.9481 1953.5 lineto
+2837.9481 1953.5 lineto
+closepath stroke
+0 0 0 nodecolor
+15 /helvetica set_font
+2713.9481 2166.5 moveto 116 (oxidoreductase) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2741.4481 2149.5 moveto 61 (activity,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2736.4481 2132.5 moveto 71 (acting on) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2717.4481 2115.5 moveto 109 (paired donors,) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2717.9481 2098.5 moveto 108 (with oxidation) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2731.4481 2081.5 moveto 81 (of a pair of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2745.9481 2064.5 moveto 52 (donors) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2728.9481 2047.5 moveto 86 (resulting in) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2720.9481 2030.5 moveto 102 (the reduction) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2724.9481 2013.5 moveto 94 (of molecular) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2718.4481 1996.5 moveto 107 (oxygen to two) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2724.4481 1979.5 moveto 95 (molecules of) alignedtext
+0 0 0 nodecolor
+15 /helvetica set_font
+2750.4481 1962.5 moveto 43 (water) alignedtext
+grestore
+% node61->node60
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2785.4941 1953.3382 moveto
+2806.0545 1780.8201 2843.9701 1462.6774 2855.52 1365.765 curveto
+stroke
+grestore
+% node61->node63
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2772.6374 1953.3197 moveto
+2774.338 1727.6522 2779.9171 1207.1494 2796.9481 770 curveto
+2802.601 624.9024 2814.7695 449.8841 2818.6979 395.1826 curveto
+stroke
+grestore
+% node62->node61
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 2747.5844 3256.2635 moveto
+2752.0432 3038.9827 2764.4198 2435.8611 2769.6101 2182.9353 curveto
+stroke
+grestore
+% node65
+gsave
+0 0 0.65098 nodecolor
+newpath 3689.4481 2089 moveto
+3406.4481 2089 lineto
+3406.4481 2047 lineto
+3689.4481 2047 lineto
+closepath fill
+1 setlinewidth
+filled
+0 0 0.65098 nodecolor
+newpath 3689.4481 2089 moveto
+3406.4481 2089 lineto
+3406.4481 2047 lineto
+3689.4481 2047 lineto
+closepath stroke
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3414.4481 2073 moveto 267 (OLE1 SDH2 CYC1 SDH3 SHH3 CYC7) alignedtext
+0.66667 1 1 nodecolor
+15 /helvetica set_font
+3481.9481 2056 moveto 132 (SDH1 CYT1 SDH9) alignedtext
+grestore
+% node64->node65
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 3483.4349 3307.4592 moveto
+3492.4137 3135.0925 3539.2711 2235.572 3546.8983 2089.1544 curveto
+stroke
+grestore
+endpage
+showpage
+grestore
+%%PageTrailer
+%%EndPage: 1
+%%Trailer
+%%Pages: 1
+%%BoundingBox: 36 36 576 752
+end
+restore
+%%EOF
