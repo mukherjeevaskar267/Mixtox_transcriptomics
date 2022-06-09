@@ -168,3 +168,66 @@ pheatmap(sampleDistMatrix_SC,
 dev.off()
 
 
+par(mfcol=c(4,2))
+hist(salt_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(600mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+plot(NULL, 
+     xlim=c(-6,6), 
+     ylim=c(0,3000), 
+     ylab="", 
+     xlab="")
+hist(para_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Paraquat (1000 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(rapa_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Rapamycin (1 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+par(mfcol=c(4,2))
+hist(salt1_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(650mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(salt2_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(1200mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(para_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Paraquat (500 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(rapa_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Rapamycin (1 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))

@@ -1,0 +1,954 @@
+#To install DESeq2 package, start R (version "3.5") and enter:
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DESeq2", version = "3.8")
+#Install ggplot2 package
+install.packages("ggplot2")
+install.packages("pheatmap")
+#Install Goseq
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("goseq")
+#loading all the required library
+library(ggplot2)
+library(DESeq2)
+library(pheatmap)        
+library(RColorBrewer)
+options(java.parameters = "-Xmx1024m")
+library(xlsx)
+library(apeglm)
+library(goseq)
+#sometime rJava dpendent packages do not load properly due to 
+#Malfunction in the Java configuration after jdk toolkit installation
+#In those cases, run the following in the terminal and then restart the R session
+#In most case the problem will be solved
+#First check the version of java
+# $java -version
+# should return 
+# java version "1.8.0_202"
+# Java(TM) SE Runtime Environment (build 1.8.0_202-b08)
+# Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)
+#Next run the following code in the terminal
+# $sudo R CMD javareconf
+#Next restart R session
+
+#Problem should be solved
+#If not you might have to add the env variable $JAVA_HOME manually. Look it up in google 
+
+########################
+#### IMPORT DATA #######
+########################
+
+#Step 1
+#save the path of the htseq output folder in a variable called directory
+
+directory <- "/Users/vaskar/Box\ Sync/Post_Doc_Goteborg/RNAseq_analysis/HTSeq_SC_counts"
+
+#Step 2
+#Create a sample table with 3 columns. First column should be "sampleName" i.e. the name identifier of the samples
+#The second column should be "fileName" i.e. the file name list in this htseq output folder with the correct extentions, 
+#and the third column should be condition i.e. the treatment condition. The column names should be exactly same without 
+#the quotations. This is necessary for the functions to work properly. You can create this table in excel and then copy 
+#paste it in a .txt object. Later it can be read by the read.table function 
+
+sampleinfo <- read.table("sampleTable.txt", header = TRUE, sep = "\t", as.is = TRUE)
+
+#Step 4 Create the sampleTable object using the following function
+
+sampleTable <- data.frame(sampleName = sampleinfo$sampleName,
+                          fileName = sampleinfo$fileName,
+                          condition = sampleinfo$condition)
+#Step 4
+#build the DESeqDataSet using the following function
+ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+                                       directory = directory,
+                                       design= ~ condition)
+#Step 5 
+#print the object
+ddsHTSeq
+#check the head of the object
+head(assay(ddsHTSeq))
+
+#################################
+###### DATA TRANSFORMATION ######
+#################################
+
+#Pre-filtering
+keep<-rowSums(counts(ddsHTSeq)) >= 10
+dds<-ddsHTSeq[keep, ]
+dds_l<-ddsHTSeq[!keep, ]
+write.xlsx(assay(dds_l), file = "filtered_count.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SC_filtered", append = TRUE)
+
+#Data transformation functions within DESeq one are the ntd (shifted logarithm), rlog (regularized logarithm)
+# and vst (variance stabilizing transformation). The shifted logarithm has elevated standard deviation
+#in the lower count range, and the regularized log to a lesser extent, while for the 
+#variance stabilized data the standard deviation is roughly constant along the whole dynamic range.
+#Note that the vertical axis in such plots is the square root of the variance over all samples, 
+#so including the variance due to the experimental conditions. While a flat curve of the 
+#square root of variance over the mean may seem like the goal of such transformations, 
+#this may be unreasonable in the case of datasets with many true differences due to the 
+#experimental conditions.
+
+rld<-rlogTransformation(dds)
+vsd<-varianceStabilizingTransformation(dds)
+ntd<-normTransform(dds)
+
+#Effects of transformations on the variance
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("vsn", version = "3.8")
+library(vsn)
+meanSdPlot(assay(rld))
+meanSdPlot(assay(vsd))
+meanSdPlot(assay(ntd))
+
+################################
+#### Plotting PCA ##############
+################################
+
+#The above analysis shows that the rld data transformation is most suitable for our dataset
+#Therefore from now on all analysis will be with the rld dataset
+
+pdf("PCA_SC.pdf", height = 7, width = 10)
+plotPCA(rld)
+dev.off()
+
+################################
+##### SIMILARITY MATRIX#########
+################################
+
+#Calculation of the euclidean distance of the transformed data
+#Remember that you would need to transpose the data 
+#since we want to calculate the distance between samples rather than among genes. 
+#So we need the samples as rows rather than columns
+sampleDists <- dist(t(assay(rld)))
+
+#Creating the corresponding matrix
+sampleDistMatrix <- as.matrix(sampleDists)
+
+#Creating a matrix with the sample names and sample names as the row names
+sample_data<-data.frame(Sample=sampleinfo$sampleName)
+rownames(sample_data)<-sampleinfo$sampleName
+
+#ploting the distance matrix
+pheatmap(sampleDistMatrix, annotation_col = sample_data)
+
+#alternatively for a different color scale 
+pheatmap(sampleDistMatrix, annotation_col = sample_data, color = colorRampPalette(c("navy", "white", "firebrick3"))(50))
+
+#creating a distance matrix tagging the groups of the samples
+sample_data2<-data.frame(Group=sampleinfo$condition)
+row.names(sample_data2)<-sampleinfo$sampleName
+
+#defining the colors we want to use depending on the condition
+annotation_c <- list(Group = c(Ctrl="red", Para="brown", Rapa="green", Salt="cyan", SaPa="blue", SaRa="magenta"))
+
+#ploting the distance matrix by adding colors according to the sample group
+pdf("similaritymatrix_SC.pdf", height = 7, width = 8)
+pheatmap(sampleDistMatrix, annotation_col = sample_data2, annotation_colors = annotation_c, color = colorRampPalette(c("navy", "white", "firebrick3"))(50))
+dev.off()
+####################################
+###MULTIDIMENTIONAL SCALING (MDS)###
+####################################
+
+#creating a Multidimensional scaling (MDS) data
+mdsData <- data.frame(cmdscale(sampleDistMatrix))
+mds <- cbind(mdsData, as.data.frame(colData(rld)))
+ggplot(mds, aes(X1,X2,color=sampleinfo$condition)) + geom_point(size=3)
+
+############################################
+#### DIFFERENTIAL EXPRESSIOIN ANALYSIS #####
+############################################
+
+#differential expression testing by DESeq() function
+dds_deg<-DESeq(dds)
+head(assay(dds_deg))
+
+###Single compound analysis###
+
+# Step 1  data preparation
+
+#differential expression Salt vs Ctrl
+res_Salt_F<-results(dds_deg, contrast=c("condition", "Salt", "Ctrl"))
+#differential expression Para vs Ctrl 
+res_Para_F<-results(dds_deg, contrast=c("condition", "Para", "Ctrl"))
+#differential expression SaPa vs Ctrl
+res_SaPa_F<-results(dds_deg, contrast=c("condition", "SaPa", "Ctrl"))
+#differential expression Rapa vs Ctrl
+res_Rapa_F<-results(dds_deg, contrast=c("condition", "Rapa", "Ctrl"))
+#differential expression SaRa vs Ctrl
+res_SaRa_F<-results(dds_deg, contrast=c("condition", "SaRa", "Ctrl"))
+
+#Step 2  making the dataframe
+salt_F<-data.frame(res_Salt_F, stringsAsFactors = FALSE)
+para_F<-data.frame(res_Para_F, stringsAsFactors = FALSE)
+rapa_F<-data.frame(res_Rapa_F, stringsAsFactors = FALSE)
+SaPa_F<-data.frame(res_SaPa_F, stringsAsFactors = FALSE)
+SaRa_F<-data.frame(res_SaRa_F, stringsAsFactors = FALSE)
+
+#Step 3  writing excel file
+write.xlsx(salt_F, "SC_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaltvsCtrl", append = TRUE)
+write.xlsx(para_F, "SC_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "ParavsCtrl", append = TRUE)
+write.xlsx(rapa_F, "SC_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "RapavsCtrl", append = TRUE)
+write.xlsx(SaPa_F, "SC_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPavsCtrl", append = TRUE)
+write.xlsx(SaRa_F, "SC_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRavsCtrl", append = TRUE)
+
+#Step 4  removing all rows that have NA in padj column and making a new data frame
+ntna_res_salt<-which(!is.na(salt_F$padj)); salt_F_ntna<-salt_F[ntna_res_salt, ]
+ntna_res_para<-which(!is.na(para_F$padj)); para_F_ntna<-para_F[ntna_res_para, ]
+ntna_res_rapa<-which(!is.na(rapa_F$padj)); rapa_F_ntna<-rapa_F[ntna_res_rapa, ]
+ntna_res_SaPa<-which(!is.na(SaPa_F$padj)); SaPa_F_ntna<-SaPa_F[ntna_res_SaPa, ]
+ntna_res_SaRa<-which(!is.na(SaRa_F$padj)); SaRa_F_ntna<-SaRa_F[ntna_res_SaRa, ]
+
+#Step 5  Therefore we subset the dataset by imposing padj threshold (<=0.05) and effect size threshold >= 1
+Salt_data<-subset(salt_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+Para_data<-subset(para_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+Rapa_data<-subset(rapa_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaPa_data<-subset(SaPa_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_data<-subset(SaRa_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+
+#Step 6  writing excel file
+write.xlsx(Salt_data, "SC_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaltvsCtrl_lfc1", append = TRUE)
+write.xlsx(Para_data, "SC_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "ParavsCtrl_lfc1", append = TRUE)
+write.xlsx(Rapa_data, "SC_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "RapavsCtrl_lfc1", append = TRUE)
+write.xlsx(SaPa_data, "SC_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPavsCtrl_lfc1", append = TRUE)
+write.xlsx(SaRa_data, "SC_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRavsCtrl_lfc1", append = TRUE)
+
+###plots to visualize the data###
+
+#plotting histogram
+hist(Salt_data$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt vs Control", col = "skyblue", ylim = c(0, 2400))
+hist(Para_data$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Paraquat vs Control", col = "skyblue", ylim = c(0, 2400))
+hist(SaPa_data$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt+Paraquat vs Control", col = "skyblue", ylim = c(0, 2400))
+hist(Rapa_data$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Rapamycin vs Control", col = "skyblue", ylim = c(0, 2400))
+hist(SaRa_data$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt+Rapamycin vs Control", col = "skyblue", ylim = c(0, 2400))
+
+#plotMA
+BiocManager::install("apeglm", version = "3.8")
+library(apeglm)
+resLFC_Salt<- lfcShrink(dds_deg, contrast =c("condition", "Ctrl", "Salt"))
+plotMA(resLFC_Salt, ylim = c(-8, 8), main = "Control vs Salt")
+resLFC_Para<- lfcShrink(dds_deg, contrast =c("condition", "Ctrl", "Para"))
+plotMA(resLFC_Para, ylim = c(-8, 8), main = "Control vs Parauat")
+resLFC_Rapa<- lfcShrink(dds_deg, contrast =c("condition", "Ctrl", "Rapa"))
+plotMA(resLFC_Rapa, ylim = c(-8, 8), main = "Control vs Rapamycin")
+resLFC_SaPa<- lfcShrink(dds_deg, contrast =c("condition", "Ctrl", "SaPa"))
+plotMA(resLFC_SaPa, ylim = c(-8, 8), main = "Control vs Salt+Paraquat")
+resLFC_SaRa<- lfcShrink(dds_deg, contrast =c("condition", "Ctrl", "SaRa"))
+plotMA(resLFC_SaRa, ylim = c(-8, 8), main = "Control vs Salt+Rapamycin")
+
+###Mix Toxicity analysis###
+
+##Creating a data-frame with the dds object
+##Remembe that dds object is already prefiltered and nearly 1000 genes had a row count <=10 and therefore eliminated from he analysis
+dds_mat<-assay(dds)
+dds_df<-data.frame(dds_mat)
+dds_df[, 19]<-dds_df[, 4] + dds_df[, 10]
+dds_df[, 20]<-dds_df[, 5] + dds_df[, 11]
+dds_df[, 21]<-dds_df[, 6] + dds_df[, 12]
+dds_df[, 22]<-dds_df[, 4] + dds_df[, 13]
+dds_df[, 23]<-dds_df[, 5] + dds_df[, 14]
+dds_df[, 24]<-dds_df[, 6] + dds_df[, 15]
+
+#Prepare a sample information file in excel and then paste it in a notepad and read it by read.table function
+coldata<- read.table("colData.txt", header = TRUE, sep = "\t", as.is = TRUE, row.names = 1)
+
+#Changing the column names of the data frame
+colnames(dds_df)<-row.names(coldata)
+
+#Making the dds object
+dds_Pred <- DESeqDataSetFromMatrix(countData = dds_df,
+                              colData = coldata,
+                              design = ~condition)
+
+##Note we observed this warning msg
+###Warning message:
+#In DESeqDataSet(se, design = design, ignoreRank) :
+# some variables in design formula are characters, converting to factors
+
+rld_Pred<-rlogTransformation(dds_Pred)
+dds_pred_rld<-assay(rld_Pred)
+dds_pred_rld_df<-data.frame(dds_pred_rld)
+
+
+#Plotting the scatter plot and linear regression modelling
+pdf("Model_SaPa_R1.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X7_Sc_SP1, dds_pred_rld_df$X19_Sc_P_SP1, pch = 16, cex = 1, col = "blue", main = "Salt+Paraquat Observed vs Predicted R1", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaPa_R1<-lm(dds_pred_rld_df$X7_Sc_SP1~dds_pred_rld_df$X19_Sc_P_SP1)
+abline(mod_SaPa_R1)
+dev.off()
+summary(mod_SaPa_R1)
+
+pdf("Model_SaPa_R2.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X8_Sc_SP2, dds_pred_rld_df$X20_Sc_P_SP2, pch = 16, cex = 1, col = "blue", main = "Salt+Paraquat Observed vs Predicted R2", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaPa_R2<-lm(dds_pred_rld_df$X8_Sc_SP2~dds_pred_rld_df$X20_Sc_P_SP2)
+abline(mod_SaPa_R2)
+dev.off()
+summary(mod_SaPa_R2)
+
+pdf("Model_SaPa_R3.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X9_Sc_SP3, dds_pred_rld_df$X21_Sc_P_SP3, pch = 16, cex = 1, col = "blue", main = "Salt+Paraquat Observed vs Predicted R3", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaPa_R3<-lm(dds_pred_rld_df$X9_Sc_SP3~dds_pred_rld_df$X21_Sc_P_SP3)
+abline(mod_SaPa_R3)
+dev.off()
+summary(mod_SaPa_R3)
+
+pdf("Model_SaRa_R1.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X16_Sc_SR1, dds_pred_rld_df$X22_Sc_P_SR1, pch = 16, cex = 1, col = "red", main = "Salt+Rapamycin Observed vs Predicted R1", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaRa_R1<-lm(dds_pred_rld_df$X16_Sc_SR1~dds_pred_rld_df$X22_Sc_P_SR1)
+abline(mod_SaRa_R1)
+dev.off()
+summary(mod_SaRa_R1)
+
+pdf("Model_SaRa_R2.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X17_Sc_SR2, dds_pred_rld_df$X23_Sc_P_SR2, pch = 16, cex = 1, col = "red", main = "Salt+Rapamycin Observed vs Predicted R2", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaRa_R2<-lm(dds_pred_rld_df$X17_Sc_SR2~dds_pred_rld_df$X23_Sc_P_SR2)
+abline(mod_SaRa_R2)
+dev.off()
+summary(mod_SaRa_R2)
+
+pdf("Model_SaRa_R3.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X18_Sc_SR3, dds_pred_rld_df$X24_Sc_P_SR3, pch = 16, cex = 1, col = "red", main = "Salt+Rapamycin Observed vs Predicted R3", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaRa_R3<-lm(dds_pred_rld_df$X18_Sc_SR3~dds_pred_rld_df$X24_Sc_P_SR3)
+abline(mod_SaRa_R3)
+dev.off()
+summary(mod_SaRa_R3)
+
+#Some more estimations about the strength of the model
+pdf("Model_SaRavsCtrl.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X1_Sc_C1, dds_pred_rld_df$X16_Sc_SR1, pch = 16, cex = 1, col = "green", main = " Control vs Salt+Rapamycin", xlab = "CONTROL", ylab = "SALT+RAPAMYCIN")
+mod_SaRavsCtrl<-lm(dds_pred_rld_df$X1_Sc_C1~dds_pred_rld_df$X16_Sc_SR1)
+abline(mod_SaRavsCtrl)
+dev.off()
+summary(mod_SaRavsCtrl)
+
+pdf("Model_SaRavsSaPa.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X7_Sc_SP1, dds_pred_rld_df$X16_Sc_SR1, pch = 16, cex = 1, col = "green", main = " Salt+Paraquat vs Salt+Rapamycin", xlab = "SALT+PARAQUAT", ylab = "SALT+RAPAMYCIN")
+mod_SaRavsSaPa<-lm(dds_pred_rld_df$X7_Sc_SP1~dds_pred_rld_df$X16_Sc_SR1)
+abline(mod_SaRavsSaPa)
+dev.off()
+summary(mod_SaRavsSaPa)
+
+pdf("Model_ParavsRapa.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X13_Sc_R1, dds_pred_rld_df$X10_Sc_P1, pch = 16, cex = 1, col = "green", main = " Rapamycin vs Paraquat", xlab = "RAPAMYCIN", ylab = "PARAQUAT")
+mod_ParavsRapa<-lm(dds_pred_rld_df$X13_Sc_R1~dds_pred_rld_df$X10_Sc_P1)
+abline(mod_ParavsRapa)
+dev.off()
+summary(mod_ParavsRapa)
+
+#Even for seemingly purely unrelated conditions, we have a similarity of 85-92% in the gene expresssion
+
+pdf("Model_SaRavsRapa.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X13_Sc_R1, dds_pred_rld_df$X16_Sc_SR1, pch = 16, cex = 1, col = "green", main = " Rapamycin vs Salt+Rapamycin", xlab = "RAPAMYCIN", ylab = "SALT+RAPAMYCIN")
+mod_SaRavsRapa<-lm(dds_pred_rld_df$X13_Sc_R1~dds_pred_rld_df$X16_Sc_SR1)
+abline(mod_SaRavsRapa)
+dev.off()
+summary(mod_SaRavsRapa)
+
+pdf("Model_CtrlvsCtrl.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X1_Sc_C1, dds_pred_rld_df$X2_Sc_C2, pch = 16, cex = 1, col = "green", main = " Control_R1 vs Control_R2", xlab = "REPLICATE1", ylab = "REPLICATE2")
+mod_Ctrlr1vsCtrlr2<-lm(dds_pred_rld_df$X1_Sc_C1~dds_pred_rld_df$X2_Sc_C2)
+abline(mod_Ctrlr1vsCtrlr2)
+dev.off()
+summary(mod_Ctrlr1vsCtrlr2)
+
+pdf("Model_RapavsRapa.pdf", height = 10, width = 10)
+plot(dds_pred_rld_df$X13_Sc_R1, dds_pred_rld_df$X14_Sc_R2, pch = 16, cex = 1, col = "green", main = " Rapamycin_R1 vs Rapamycin_R2", xlab = "REPLICATE1", ylab = "REPLICATE2")
+mod_Rapar1vsRapar2<-lm(dds_pred_rld_df$X13_Sc_R1~dds_pred_rld_df$X14_Sc_R2)
+abline(mod_Rapar1vsRapar2)
+dev.off()
+summary(mod_Rapar1vsRapar2)
+
+#On the other hand related conditions have a similarity of 94-98% in the gene expresssion
+
+#differential expression testing by DESeq() function
+dds_deg_Pred<-DESeq(dds_Pred)
+head(assay(dds_deg_Pred))
+
+#plotMA
+resLFC_SaRa_Pred<- lfcShrink(dds_deg_Pred, contrast =c("condition", "Pred_SaRa", "SaRa"))
+pdf("SaRa_PredvsObs.pdf", height = 10, width = 10)
+plotMA(resLFC_SaRa_Pred, ylim = c(-8, 8), main = "Salt+Rapamycin Predicted vs Observed")
+dev.off()
+
+resLFC_SaPa_Pred<- lfcShrink(dds_deg_Pred, contrast =c("condition", "Pred_SaPa", "SaPa"))
+pdf("SaPa_PredvsObs.pdf", height = 10, width = 10)
+plotMA(resLFC_SaPa_Pred, ylim = c(-8, 8), main = "Salt+Paraquat Predicted vs Observed")
+dev.off()
+
+resLFC_SaPa_MxM2_Para<- lfcShrink(dds_deg, contrast =c("condition", "SaPa", "Para"))
+pdf("SaPa_MxM2_Para.pdf")
+plotMA(resLFC_SaPa_MxM2_Para, ylim = c(-8, 8), main = "Paraquat vs Salt+Paraquat")
+dev.off()
+
+resLFC_SaPa_MxM2_Salt<- lfcShrink(dds_deg, contrast =c("condition", "SaPa", "Salt"))
+pdf("SaPa_MxM2_Salt.pdf")
+plotMA(resLFC_SaPa_MxM2_Salt, ylim = c(-8, 8), main = "Salt vs Salt+Paraquat")
+dev.off()
+
+resLFC_SaRa_MxM2_Rapa<- lfcShrink(dds_deg, contrast =c("condition", "SaRa", "Rapa"))
+pdf("SaRa_MxM2_Rapa.pdf")
+plotMA(resLFC_SaRa_MxM2_Rapa, ylim = c(-8, 8), main = "Rapamycin vs Salt+Rapamycin")
+dev.off()
+
+resLFC_SaRa_MxM2_Salt<- lfcShrink(dds_deg, contrast =c("condition", "SaRa", "Salt"))
+pdf("SaRa_MxM2_Salt.pdf")
+plotMA(resLFC_SaRa_MxM2_Salt, ylim = c(-8, 8), main = "Salt vs Salt+Rapamycin")
+dev.off()
+
+#Next we compare our model (predicted) vs the mixture transcriptomic response
+# Step 1  data preparation
+
+#differential expression SaPa vs Pred_SaPa
+res_SaPa_Pred<-results(dds_deg_Pred, contrast=c("condition", "SaPa", "Pred_SaPa"))
+
+#differential expression SaRa vs Pred_SaRa
+res_SaRa_Pred<-results(dds_deg_Pred, contrast=c("condition", "SaRa", "Pred_SaRa"))
+
+#differential expression Para vs SaPa
+#Since the only difference between the two condition is the addition of the salt,
+#it is similar to comparing RNA expression of untreated vs treated
+res_SaPa_MxM2_Para<-results(dds_deg, contrast=c("condition", "SaPa", "Para"))
+res_SaPa_MxM2_Salt<-results(dds_deg, contrast=c("condition", "SaPa", "Salt"))
+res_SaRa_MxM2_Rapa<-results(dds_deg, contrast=c("condition", "SaRa", "Rapa"))
+res_SaRa_MxM2_Salt<-results(dds_deg, contrast=c("condition", "SaRa", "Salt"))
+
+#Step 2  making the dataframe
+SaPa_Pred_F<-data.frame(res_SaPa_Pred, stringsAsFactors = FALSE)
+SaRa_Pred_F<-data.frame(res_SaRa_Pred, stringsAsFactors = FALSE)
+SaPa_MxM2_Para<-data.frame(res_SaPa_MxM2_Para, stringsAsFactors = FALSE)
+SaPa_MxM2_Salt<-data.frame(res_SaPa_MxM2_Salt, stringsAsFactors = FALSE)
+SaRa_MxM2_Rapa<-data.frame(res_SaRa_MxM2_Rapa, stringsAsFactors = FALSE)
+SaRa_MxM2_Salt<-data.frame(res_SaRa_MxM2_Salt, stringsAsFactors = FALSE)
+
+#Step 3  writing excel file
+write.xlsx(SaPa_Pred_F, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa", append = TRUE)
+write.xlsx(SaRa_Pred_F, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa", append = TRUE)
+write.xlsx(SaPa_MxM2_Para, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_MxM2_Para", append = TRUE)
+write.xlsx(SaPa_MxM2_Salt, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_MxM2_Salt", append = TRUE)
+write.xlsx(SaRa_MxM2_Rapa, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_MxM2_Rapa", append = TRUE)
+write.xlsx(SaRa_MxM2_Salt, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_MxM2_Salt", append = TRUE)
+
+#Step 4  removing all rows that have NA in padj column and making a new data frame
+ntna_res_SaPa_Pred<-which(!is.na(SaPa_Pred_F$padj)); SaPa_Pred_F_ntna<-SaPa_Pred_F[ntna_res_SaPa_Pred, ]
+ntna_res_SaRa_Pred<-which(!is.na(SaRa_Pred_F$padj)); SaRa_Pred_F_ntna<-SaRa_Pred_F[ntna_res_SaRa_Pred, ]
+ntna_res_SaPa_MxM2_Para<-which(!is.na(SaPa_MxM2_Para$padj)); SaPa_MxM2_Para_ntna<-SaPa_MxM2_Para[ntna_res_SaPa_MxM2_Para, ]
+ntna_res_SaPa_MxM2_Salt<-which(!is.na(SaPa_MxM2_Salt$padj)); SaPa_MxM2_Salt_ntna<-SaPa_MxM2_Salt[ntna_res_SaPa_MxM2_Salt, ]
+ntna_res_SaRa_MxM2_Rapa<-which(!is.na(SaRa_MxM2_Rapa$padj)); SaRa_MxM2_Rapa_ntna<-SaRa_MxM2_Rapa[ntna_res_SaRa_MxM2_Rapa, ]
+ntna_res_SaRa_MxM2_Salt<-which(!is.na(SaRa_MxM2_Salt$padj)); SaRa_MxM2_Salt_ntna<-SaRa_MxM2_Salt[ntna_res_SaRa_MxM2_Salt, ]
+
+#Step 5  Therefore we subset the dataset by imposing padj threshold (<=0.05) and effect size threshold >= 1
+SaPa_Pred_data<-subset(SaPa_Pred_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_Pred_data<-subset(SaRa_Pred_F_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaPa_MxM2_data<-subset(SaPa_MxM2_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_MxM2_data<-subset(SaRa_MxM2_ntna, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+
+#Step 6  writing excel file
+write.xlsx(SaPa_Pred_data, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_lfc1", append = TRUE)
+write.xlsx(SaRa_Pred_data, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_lfc1", append = TRUE)
+write.xlsx(SaPa_MxM2_data, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_MxM2_lfc1", append = TRUE)
+write.xlsx(SaRa_MxM2_data, "SC_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_MxM2_lfc1", append = TRUE)
+
+################################
+###### DATA VISUALIZATION ######
+################################
+
+#Final model test
+res_SaPa_Pred_model<-results(dds_deg_Pred, contrast=c("condition", "Pred_SaPa", "Ctrl"))
+SaPa_Pred_alt<-data.frame(res_SaPa_Pred_model, stringsAsFactors = FALSE)
+pdf("Model_SaPa_alt_SC.pdf", height = 10, width = 10)
+plot(SaPa_F$log2FoldChange, SaPa_Pred_alt$log2FoldChange, pch = 16, cex = 1, col = "cyan", main = " Salt+Paraquat Observed vs Predicted model", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaPa_F<-lm(SaPa_F$log2FoldChange~SaPa_Pred_alt$log2FoldChange)
+abline(mod_SaPa_F)
+dev.off()
+summary(mod_SaPa_F)
+
+res_SaRa_Pred_model<-results(dds_deg_Pred, contrast=c("condition", "Pred_SaRa", "Ctrl"))
+SaRa_Pred_alt<-data.frame(res_SaRa_Pred_model, stringsAsFactors = FALSE)
+pdf("Model_SaRa_alt_SC.pdf", height = 10, width = 10)
+plot(SaRa_F$log2FoldChange, SaRa_Pred_alt$log2FoldChange, pch = 16, cex = 1, col = "magenta", main = " Salt+Rapamycin Observed vs Predicted model", xlab = "OBSERVED", ylab = "PREDICTED")
+mod_SaRa_F<-lm(SaRa_F$log2FoldChange~SaRa_Pred_alt$log2FoldChange)
+abline(mod_SaRa_F)
+dev.off()
+summary(mod_SaRa_F)
+
+#################################
+####### GENE ANNOTATION #########
+#################################
+
+BiocManager::install("biomaRt")
+library(biomaRt)
+#First specify which BioMart database we will be using with the useMArt()
+mart<- useMart("ensembl")
+#next check the different datasets available within a biomaRt using listDatasets()
+listDatasets(mart)
+#Then set the dataset with the useDataset() function. 
+#Specify the dataset to scerevisiae_gene_ensembl and the mart to mart.
+mart <- useDataset("scerevisiae_gene_ensembl",mart = mart)
+# acquiring the corresponding gene names
+
+
+BiocManager::install("org.Sc.sgd.db")
+
+
+##########################################################
+##########################################################
+
+############### Debaryomyces hansenii ####################
+
+##########################################################
+##########################################################
+
+
+########################
+#### IMPORT DATA #######
+########################
+
+#Step 1
+#save the path of the htseq output folder in a variable called directory
+
+directory_DH <- "/Users/vaskar/Box Sync/Post_Doc_Goteborg/RNAseq_analysis/HTSeq_DH_count"
+sampleFiles_DH <- grep("P9503",list.files(directory_DH),value=TRUE)
+#Step 2
+#Create a sample table with 3 columns. First column should be "sampleName" i.e. the name identifier of the samples
+#The second column should be "fileName" i.e. the file name list in this htseq output folder with the correct extentions, 
+#and the third column should be condition i.e. the treatment condition. The column names should be exactly same without 
+#the quotations. This is necessary for the functions to work properly. You can create this table in excel and then copy 
+#paste it in a .txt object. Later it can be read by the read.table function 
+
+sampleinfo_DH <- read.table("sampleinfo_DH.txt", header = TRUE, sep = "\t", as.is = TRUE)
+
+#Step 4 Create the sampleTable object using the following function
+
+sampleTable_DH <- data.frame(sampleName = sampleinfo_DH$sampleName,
+                          fileName = sampleinfo_DH$fileName,
+                          condition = sampleinfo_DH$condition)
+#Step 4
+#build the DESeqDataSet using the following function
+ddsHTSeq_DH <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable_DH,
+                                       directory = directory_DH,
+                                       design= ~ condition)
+#Step 5 
+#print the object
+ddsHTSeq_DH
+#check the head of the object
+head(assay(ddsHTSeq_DH))
+
+#################################
+###### DATA TRANSFORMATION ######
+#################################
+
+#Pre-filtering
+keep<-rowSums(counts(ddsHTSeq_DH)) >= 10
+dds_DH<-ddsHTSeq_DH[keep, ]
+dds_DH_l<-ddsHTSeq_DH[!keep, ]
+write.xlsx(assay(dds_DH_l), file = "filtered_count.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "DH_filtered", append = TRUE)
+
+#Data transformation functions within DESeq one are the ntd (shifted logarithm), rlog (regularized logarithm)
+# and vst (variance stabilizing transformation). The shifted logarithm has elevated standard deviation
+#in the lower count range, and the regularized log to a lesser extent, while for the 
+#variance stabilized data the standard deviation is roughly constant along the whole dynamic range.
+#Note that the vertical axis in such plots is the square root of the variance over all samples, 
+#so including the variance due to the experimental conditions. While a flat curve of the 
+#square root of variance over the mean may seem like the goal of such transformations, 
+#this may be unreasonable in the case of datasets with many true differences due to the 
+#experimental conditions.
+
+rld_DH<-rlogTransformation(dds_DH)
+vsd_DH<-varianceStabilizingTransformation(dds_DH)
+ntd_DH<-normTransform(dds_DH)
+
+#Effects of transformations on the variance
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("vsn", version = "3.8")
+library(vsn)
+pdf("meanSdPlot_rld_DH.pdf")
+meanSdPlot(assay(rld_DH))
+dev.off()
+pdf("meanSdPlot_vsd_DH.pdf")
+meanSdPlot(assay(vsd_DH))
+dev.off()
+pdf("meanSdPlot_ntd_DH.pdf")
+meanSdPlot(assay(ntd_DH))
+dev.off()
+
+################################
+#### Plotting PCA ##############
+################################
+
+#The above analysis shows that the rld data transformation is most suitable for our dataset
+#Therefore from now on all analysis will be with the rld dataset
+
+pdf("PCA_DH.pdf", height = 7, width = 10)
+plotPCA(rld_DH)
+dev.off()
+
+################################
+##### SIMILARITY MATRIX#########
+################################
+
+#Calculation of the euclidean distance of the transformed data
+#Remember that you would need to transpose the data 
+#since we want to calculate the distance between samples rather than among genes. 
+#So we need the samples as rows rather than columns
+sampleDists_DH <- dist(t(assay(rld_DH)))
+
+#Creating the corresponding matrix
+sampleDistMatrix_DH <- as.matrix(sampleDists_DH)
+
+#Creating a matrix with the sample names and sample names as the row names
+sample_data_DH<-data.frame(Sample=sampleinfo_DH$sampleName)
+rownames(sample_data_DH)<-sampleinfo_DH$sampleName
+
+#ploting the distance matrix
+pheatmap(sampleDistMatrix_DH, annotation_col = sample_data_DH)
+
+#alternatively for a different color scale 
+pheatmap(sampleDistMatrix_DH, annotation_col = sample_data_DH, color = colorRampPalette(c("navy", "white", "firebrick3"))(50))
+
+#creating a distance matrix tagging the groups of the samples
+sample_data2_DH<-data.frame(Group=sampleinfo_DH$condition)
+row.names(sample_data2_DH)<-sampleinfo_DH$sampleName
+
+#defining the colors we want to use depending on the condition
+annotation_c_DH <- list(Group = c(Ctrl="red", Salt1="cyan", SaPa="purple", Para="brown", Salt2="blue", Rapa="green", SaRa="magenta"))
+
+#ploting the distance matrix by adding colors according to the sample group
+pdf("similaritymatrix_DH.pdf", height = 7, width = 8)
+pheatmap(sampleDistMatrix_DH, annotation_col = sample_data2_DH, annotation_colors = annotation_c_DH, color = colorRampPalette(c("navy", "white", "firebrick3"))(50), fontsize = 8)
+dev.off()
+
+####################################
+###MULTIDIMENTIONAL SCALING (MDS)###
+####################################
+
+#creating a Multidimensional scaling (MDS) data
+mdsData_DH <- data.frame(cmdscale(sampleDistMatrix_DH))
+mds_DH <- cbind(mdsData_DH, as.data.frame(colData(rld_DH)))
+pdf("MDS_DH.pdf", height = 7, width = 10)
+ggplot(mds_DH, aes(X1,X2,color=sampleinfo_DH$condition)) + geom_point(size=3)
+dev.off()
+
+############################################
+#### DIFFERENTIAL EXPRESSIOIN ANALYSIS #####
+############################################
+
+#differential expression testing by DESeq() function
+dds_deg_DH<-DESeq(dds_DH)
+head(assay(dds_deg_DH))
+
+###Single compound analysis###
+
+# Step 1  data preparation
+
+#differential expression Salt vs Ctrl
+res_Salt1_F_DH<-results(dds_deg_DH, contrast=c("condition", "Salt1", "Ctrl"))
+res_Salt2_F_DH<-results(dds_deg_DH, contrast=c("condition", "Salt2", "Ctrl"))
+#differential expression Para vs Ctrl 
+res_Para_F_DH<-results(dds_deg_DH, contrast=c("condition", "Para", "Ctrl"))
+#differential expression SaPa vs Ctrl
+res_SaPa_F_DH<-results(dds_deg_DH, contrast=c("condition", "SaPa", "Ctrl"))
+#differential expression Rapa vs Ctrl
+res_Rapa_F_DH<-results(dds_deg_DH, contrast=c("condition", "Rapa", "Ctrl"))
+#differential expression SaRa vs Ctrl
+res_SaRa_F_DH<-results(dds_deg_DH, contrast=c("condition", "SaRa", "Ctrl"))
+
+#Step 2  making the dataframe
+salt1_F_DH<-data.frame(res_Salt1_F_DH, stringsAsFactors = FALSE)
+salt2_F_DH<-data.frame(res_Salt2_F_DH, stringsAsFactors = FALSE)
+para_F_DH<-data.frame(res_Para_F_DH, stringsAsFactors = FALSE)
+rapa_F_DH<-data.frame(res_Rapa_F_DH, stringsAsFactors = FALSE)
+SaPa_F_DH<-data.frame(res_SaPa_F_DH, stringsAsFactors = FALSE)
+SaRa_F_DH<-data.frame(res_SaRa_F_DH, stringsAsFactors = FALSE)
+
+#Step 3  writing excel file
+write.xlsx(salt1_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Salt1vsCtrl", append = TRUE)
+write.xlsx(salt2_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Salt2vsCtrl", append = TRUE)
+write.xlsx(para_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "ParavsCtrl", append = TRUE)
+write.xlsx(rapa_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "RapavsCtrl", append = TRUE)
+write.xlsx(SaPa_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPavsCtrl", append = TRUE)
+write.xlsx(SaRa_F_DH, "DH_Single_compound_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRavsCtrl", append = TRUE)
+
+#Step 4  removing all rows that have NA in padj column and making a new data frame
+ntna_res_salt1_DH<-which(!is.na(salt1_F_DH$padj)); salt1_F_ntna_DH<-salt1_F_DH[ntna_res_salt1_DH, ]
+ntna_res_salt2_DH<-which(!is.na(salt2_F_DH$padj)); salt2_F_ntna_DH<-salt2_F_DH[ntna_res_salt2_DH, ]
+ntna_res_para_DH<-which(!is.na(para_F_DH$padj)); para_F_ntna_DH<-para_F_DH[ntna_res_para_DH, ]
+ntna_res_rapa_DH<-which(!is.na(rapa_F_DH$padj)); rapa_F_ntna_DH<-rapa_F_DH[ntna_res_rapa_DH, ]
+ntna_res_SaPa_DH<-which(!is.na(SaPa_F_DH$padj)); SaPa_F_ntna_DH<-SaPa_F_DH[ntna_res_SaPa_DH, ]
+ntna_res_SaRa_DH<-which(!is.na(SaRa_F_DH$padj)); SaRa_F_ntna_DH<-SaRa_F_DH[ntna_res_SaRa_DH, ]
+
+#Step 5  Therefore we subset the dataset by imposing padj threshold (<=0.05) and effect size threshold >= 1
+Salt1_data_DH<-subset(salt1_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+Salt2_data_DH<-subset(salt2_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+Para_data_DH<-subset(para_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+Rapa_data_DH<-subset(rapa_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaPa_data_DH<-subset(SaPa_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_data_DH<-subset(SaRa_F_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+
+#Step 6  writing excel file
+write.xlsx(Salt1_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Salt1vsCtrl_lfc1", append = TRUE)
+write.xlsx(Salt2_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Salt2vsCtrl_lfc1", append = TRUE)
+write.xlsx(Para_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "ParavsCtrl_lfc1", append = TRUE)
+write.xlsx(Rapa_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "RapavsCtrl_lfc1", append = TRUE)
+write.xlsx(SaPa_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPavsCtrl_lfc1", append = TRUE)
+write.xlsx(SaRa_data_DH, "DH_Single_compound_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRavsCtrl_lfc1", append = TRUE)
+
+###plots to visualize the data###
+
+#plotting histogram
+pdf("Hist_Salt1_DH.pdf")
+hist(Salt1_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt1 vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+pdf("Hist_Salt2_DH.pdf")
+hist(Salt2_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt2 vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+pdf("Hist_Para_DH.pdf")
+hist(Para_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Paraquat vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+pdf("Hist_SaPa_DH.pdf")
+hist(SaPa_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt+Paraquat vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+pdf("Hist_Rapa_DH.pdf")
+hist(Rapa_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Rapamycin vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+pdf("Hist_SaRa_DH.pdf")
+hist(SaRa_data_DH$padj, breaks = 100, xlab = "padj", ylab = "Frequency", main = "Salt+Rapamycin vs Control", col = "skyblue", ylim = c(0, 1000))
+dev.off()
+
+#plotMA
+BiocManager::install("apeglm", version = "3.8")
+library(apeglm)
+
+resLFC_Salt1_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "Salt1"))
+pdf("plotMA_Salt1_DH.pdf")
+plotMA(resLFC_Salt1_DH, ylim = c(-8, 8), main = "Control vs Salt1")
+dev.off()
+
+resLFC_Salt2_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "Salt2"))
+pdf("plotMA_Salt2_DH.pdf")
+plotMA(resLFC_Salt2_DH, ylim = c(-8, 8), main = "Control vs Salt2")
+dev.off()
+
+resLFC_Para_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "Para"))
+pdf("plotMA_Para_DH.pdf")
+plotMA(resLFC_Para_DH, ylim = c(-8, 8), main = "Control vs Parauat")
+dev.off()
+
+resLFC_Rapa_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "Rapa"))
+pdf("plotMA_Rapa_DH.pdf")
+plotMA(resLFC_Rapa_DH, ylim = c(-8, 8), main = "Control vs Rapamycin")
+dev.off()
+
+resLFC_SaPa_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "SaPa"))
+pdf("plotMA_SaPa_DH.pdf")
+plotMA(resLFC_SaPa_DH, ylim = c(-8, 8), main = "Control vs Salt+Paraquat")
+dev.off()
+
+resLFC_SaRa_DH<- lfcShrink(dds_deg_DH, contrast =c("condition", "Ctrl", "SaRa"))
+pdf("plotMA_SaRa_DH.pdf")
+plotMA(resLFC_SaRa_DH, ylim = c(-8, 8), main = "Control vs Salt+Rapamycin")
+dev.off()
+
+#### GO annotation / Gene description file creation#####
+
+dseq_dh<-read.table("/Users/vaskar/Desktop/delme/Deseq.txt", header = TRUE, sep = "\t", as.is = TRUE)
+gl_dh<-read.table("/Users/vaskar/Desktop/delme/GL.txt", header = TRUE, sep = "\t", as.is = TRUE, fill = TRUE, quote = "")
+
+r_dseq <- nrow(dseq_dh)
+r_gl <- nrow(gl_dh)
+c<-vector(mode = "numeric", length = 0)
+m<-vector(mode = "numeric", length = 0)
+for(i in 1:r_dseq){
+  m<-which(dseq_dh[i, 1]==gl_dh[, 2])
+  if (length(m)==0){
+    c[i]<-gl_dh[6265, 1]
+  } else {
+    c[i]<-which(dseq_dh[i, 1]==gl_dh[, 2])
+  }
+  }
+gl_dh_F<-gl_dh[c, ]
+
+write.xlsx(gl_dh_F, "DH_GO_annotation_uniprot.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "DH_annotations_R", append = TRUE)
+
+###Mix Toxicity analysis_DH###
+
+
+#differential expression testing by DESeq() function
+dds_deg_DH<-DESeq(dds_DH)
+head(assay(dds_deg_DH))
+
+#differential expression Para vs SaPa
+#Since the only difference between the two condition is the addition of the salt,
+#it is similar to comparing RNA expression of untreated vs treated
+res_SaPa_MxM2_Para_DH<-results(dds_deg_DH, contrast=c("condition", "SaPa", "Para"))
+res_SaPa_MxM2_Salt_DH<-results(dds_deg_DH, contrast=c("condition", "SaPa", "Salt1"))
+res_SaRa_MxM2_Rapa_DH<-results(dds_deg_DH, contrast=c("condition", "SaRa", "Rapa"))
+res_SaRa_MxM2_Salt_DH<-results(dds_deg_DH, contrast=c("condition", "SaRa", "Salt2"))
+
+#Step 2  making the dataframe
+SaPa_MxM2_Para_DH<-data.frame(res_SaPa_MxM2_Para_DH, stringsAsFactors = FALSE)
+SaPa_MxM2_Salt1_DH<-data.frame(res_SaPa_MxM2_Salt_DH, stringsAsFactors = FALSE)
+SaRa_MxM2_Rapa_DH<-data.frame(res_SaRa_MxM2_Rapa_DH, stringsAsFactors = FALSE)
+SaRa_MxM2_Salt2_DH<-data.frame(res_SaRa_MxM2_Salt_DH, stringsAsFactors = FALSE)
+
+#Step 3  writing excel file
+write.xlsx(SaPa_MxM2_Para_DH, "DH_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_MxM2_Para", append = TRUE)
+write.xlsx(SaPa_MxM2_Salt1_DH, "DH_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_MxM2_Salt1", append = TRUE)
+write.xlsx(SaRa_MxM2_Rapa_DH, "DH_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_MxM2_Rapa", append = TRUE)
+write.xlsx(SaRa_MxM2_Salt2_DH, "DH_Mixture_DEG.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_MxM2_Salt2", append = TRUE)
+
+#Step 4  removing all rows that have NA in padj column and making a new data frame
+ntna_res_SaPa_MxM2_Para_DH<-which(!is.na(SaPa_MxM2_Para_DH$padj)); SaPa_MxM2_Para_ntna_DH<-SaPa_MxM2_Para_DH[ntna_res_SaPa_MxM2_Para_DH, ]
+ntna_res_SaPa_MxM2_Salt1_DH<-which(!is.na(SaPa_MxM2_Salt1_DH$padj)); SaPa_MxM2_Salt1_ntna_DH<-SaPa_MxM2_Salt1_DH[ntna_res_SaPa_MxM2_Salt1_DH, ]
+ntna_res_SaRa_MxM2_Rapa_DH<-which(!is.na(SaRa_MxM2_Rapa_DH$padj)); SaRa_MxM2_Rapa_ntna_DH<-SaRa_MxM2_Rapa_DH[ntna_res_SaRa_MxM2_Rapa_DH, ]
+ntna_res_SaRa_MxM2_Salt2_DH<-which(!is.na(SaRa_MxM2_Salt2_DH$padj)); SaRa_MxM2_Salt2_ntna_DH<-SaRa_MxM2_Salt2_DH[ntna_res_SaRa_MxM2_Salt2_DH, ]
+
+#Step 5  Therefore we subset the dataset by imposing padj threshold (<=0.05) and effect size threshold >= 1
+SaPa_MxM2_Para_ntna_data_DH<-subset(SaPa_MxM2_Para_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaPa_MxM2_Salt1_ntna_data_DH<-subset(SaPa_MxM2_Salt1_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_MxM2_Rapa_ntna_data_DH<-subset(SaRa_MxM2_Rapa_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+SaRa_MxM2_Salt2_ntna_data_DH<-subset(SaRa_MxM2_Salt2_ntna_DH, (log2FoldChange>= 1|log2FoldChange<=-1) & padj<=0.05)
+
+#Step 6  writing excel file
+write.xlsx(SaPa_MxM2_Para_ntna_data_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Para_MxM2_lfc1", append = TRUE)
+write.xlsx(SaPa_MxM2_Salt1_ntna_data_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Salt1_MxM2_lfc1", append = TRUE)
+write.xlsx(SaRa_MxM2_Rapa_ntna_data_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Rapa_MxM2_lfc1", append = TRUE)
+write.xlsx(SaRa_MxM2_Salt2_ntna_data_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Salt2_MxM2_lfc1", append = TRUE)
+
+#### Extracting the genes identified in the effect size with he corresponding annotations. 
+RN1<-rownames(SaPa_MxM2_Para_ntna_data_DH)
+Index_SaPavsPara_lfc1_DH<-vector(mode = "integer", length = 0)
+for(i in 1:length(RN1)){
+  Index_SaPavsPara_lfc1_DH<-c(Index_SaPavsPara_lfc1_DH, which(gl_dh_F$Systematic_name==RN1[i]))
+}
+GO_SaPavsPara_lfc1_DH<-gl_dh_F[Index_SaPavsPara_lfc1_DH, ]
+
+RN2<-rownames(SaPa_MxM2_Salt1_ntna_data_DH)
+Index_SaPavsSalt1_lfc1_DH<-vector(mode = "integer", length = 0)
+for(i in 1:length(RN2)){
+  Index_SaPavsSalt1_lfc1_DH<-c(Index_SaPavsSalt1_lfc1_DH, which(gl_dh_F$Systematic_name==RN2[i]))
+}
+GO_SaPavsSalt1_lfc1_DH<-gl_dh_F[Index_SaPavsSalt1_lfc1_DH, ]
+
+RN3<-rownames(SaRa_MxM2_Rapa_ntna_data_DH)
+Index_SaRavsRapa_lfc1_DH<-vector(mode = "integer", length = 0)
+for(i in 1:length(RN3)){
+  Index_SaRavsRapa_lfc1_DH<-c(Index_SaRavsRapa_lfc1_DH, which(gl_dh_F$Systematic_name==RN3[i]))
+}
+GO_SaRavsRapa_lfc1_DH<-gl_dh_F[Index_SaRavsRapa_lfc1_DH, ]
+
+RN4<-rownames(SaRa_MxM2_Salt2_ntna_data_DH)
+Index_SaRavsSalt2_lfc1_DH<-vector(mode = "integer", length = 0)
+for(i in 1:length(RN4)){
+  Index_SaRavsSalt2_lfc1_DH<-c(Index_SaRavsSalt2_lfc1_DH, which(gl_dh_F$Systematic_name==RN4[i]))
+}
+GO_SaRavsSalt2_lfc1_DH<-gl_dh_F[Index_SaRavsSalt2_lfc1_DH, ]
+
+#Extracting rows with GeneID from the original DEG_effectsize data.frame that has a counterpart in GO_effectsize files prepared in previous step
+SaPa_MxM2_Para_ntna_data_DH_F<- SaPa_MxM2_Para_ntna_data_DH[GO_SaPavsPara_lfc1_DH$Systematic_name, ]
+SaPa_MxM2_Salt1_ntna_data_DH_F<- SaPa_MxM2_Salt1_ntna_data_DH[GO_SaPavsSalt1_lfc1_DH$Systematic_name, ]
+SaRa_MxM2_Rapa_ntna_data_DH_F<- SaRa_MxM2_Rapa_ntna_data_DH[GO_SaRavsRapa_lfc1_DH$Systematic_name, ]
+SaRa_MxM2_Salt2_ntna_data_DH_F<- SaRa_MxM2_Salt2_ntna_data_DH[GO_SaRavsSalt2_lfc1_DH$Systematic_name, ]
+
+#writing excel file
+write.xlsx(SaPa_MxM2_Para_ntna_data_DH_F, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Para_MxM2_lfc1_F", append = TRUE)
+write.xlsx(SaPa_MxM2_Salt1_ntna_data_DH_F, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Salt1_MxM2_lfc1_F", append = TRUE)
+write.xlsx(SaRa_MxM2_Rapa_ntna_data_DH_F, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Rapa_MxM2_lfc1_F", append = TRUE)
+write.xlsx(SaRa_MxM2_Salt2_ntna_data_DH_F, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Salt2_MxM2_lfc1_F", append = TRUE)
+
+write.xlsx(GO_SaPavsPara_lfc1_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Para_MxM2_lfc1_GO", append = TRUE)
+write.xlsx(GO_SaPavsSalt1_lfc1_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaPa_Salt1_MxM2_lfc1_GO", append = TRUE)
+write.xlsx(GO_SaRavsRapa_lfc1_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Rapa_MxM2_lfc1_GO", append = TRUE)
+write.xlsx(GO_SaRavsSalt2_lfc1_DH, "DH_Mixture_DEG_effectsize.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "SaRa_Salt2_MxM2_lfc1_GO", append = TRUE)
+
+#Go enrichment file generation
+##for the moment we will use the online tool agriGO (http://bioinfo.cau.edu.cn/agriGO/analysis.php) to perform he analysis
+#scanning the whole file into a character vector where each element is a row from the text file. Remember in this object all eliments of a row will be 
+#fused in to a single character string
+GO_DH_t1 <- scan("/Users/vaskar/Desktop/delme/GO_DH.txt", what="", sep="\n")
+#Next splitting each element of the character vector using regexp (regular expression, https://www.rdocumentation.org/packages/base/versions/3.6.1/topics/regex) 
+#This converts the object in to a list
+GO_DH_t2 <- strsplit(GO_DH_t1, "[[:space:]]+")
+#Now we have the list. Will us a simple script to convert this to a GO reference file that we can use in agriGo. 
+m<-vector(mode = "integer", length = 0)
+Gene_id_DH<-vector(mode = "character", length = 0)
+GO_id_DH<-vector(mode = "character", length = 0)
+for(i in 1:length(GO_DH_t2)){
+  m<-length(GO_DH_t2[[i]])-1
+  if(m > 0){
+  Gene_id_DH<-c(Gene_id_DH, rep(GO_DH_t2[[i]][1], m))
+  GO_id_DH<-c(GO_id_DH, GO_DH_t2[[i]][2:length(GO_DH_t2[[i]])])
+  }
+}
+GO_ref_DH<-data.frame(Gene_id_DH, GO_id_DH, stringsAsFactors = FALSE)
+write.xlsx(GO_ref_DH, "GO_ref_DH.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "GO_Reference_DH", append = TRUE)
+#Now the ref file is ready
+###Bloody heck.. !! it does not work.. crappy website.. 
+
+GO_sapavspara_DH<-read.table("/Users/vaskar/Desktop/delme/SaPavsPara_lfc1_DH.txt", sep = "\t", as.is = TRUE)
+GO_Vec_SaPavsPara_DH<-GO_sapavspara_DH$V1
+R1<-vector(mode = "integer", length = 0)
+n<-length(GO_Vec_SaPavsPara_DH)
+for(i in 1:n){
+  R1 <- c(R1, which(GO_ref_DH$Gene_id_DH==GO_Vec_SaPavsPara_DH[i]))
+}
+GO_DH_SaPavsPara_F<-GO_ref_DH[R1, ]
+write.xlsx(GO_DH_SaPavsPara_F, "GO_ref_DH.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Go_SaPavsPara_lfc1", append = TRUE)
+
+##
+
+#Script to find orthologues in S cerevisiae of DEG in DH.
+GL_Orthologues<-read.table("/Users/vaskar/Desktop/delme/Ortho_DHvsSC.txt", sep = "\t", as.is = TRUE)
+GL_SaPavsPara_dn_543 <- read.table("/Users/vaskar/Desktop/delme/SaPavsPara_dn543_DH.txt", sep = "\t", as.is = TRUE)
+j<-vector(mode = "integer", length = 0)
+l<-vector(mode = "integer", length = 0)
+for(i in 1:length(GL_SaPavsPara_dn_543$V1)){
+  l<-which(GL_Orthologues$V1==GL_SaPavsPara_dn_543[i, 1])
+  if(length(l)>0){
+    j<-c(j, which(GL_Orthologues$V1==GL_SaPavsPara_dn_543[i, 1]))
+  } else {
+    j<-c(j, 3307)
+  }
+}
+Ortho_SaPavsPara_dn<-GL_Orthologues[j, ]
+write.xlsx(Ortho_SaPavsPara_dn, "Orthologues.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "GL_SaPavsPara_dn_543", append = TRUE)
+
+GL_SaPavsPara_up_308 <- read.table("/Users/vaskar/Desktop/delme/SaPavsPara_DH_up_308.txt", sep = "\t", as.is = TRUE)
+j<-vector(mode = "integer", length = 0)
+l<-vector(mode = "integer", length = 0)
+for(i in 1:length(GL_SaPavsPara_up_308$V1)){
+  l<-which(GL_Orthologues$V1==GL_SaPavsPara_up_308[i, 1])
+  if(length(l)>0){
+    j<-c(j, which(GL_Orthologues$V1==GL_SaPavsPara_up_308[i, 1]))
+  } else {
+    j<-c(j, 3307)
+  }
+}
+Ortho_SaPavsPara_up<-GL_Orthologues[j, ]
+write.xlsx(Ortho_SaPavsPara_up, "Orthologues.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "GL_SaPavsPara_up_308", append = TRUE)
+
+#Extracting the DH orthologues of the glycolytic and TCA pathway genes of SC
+GL_Gly_TCA_SC <- read.table("/Users/vaskar/Desktop/delme/gly_TCA_sc.txt", sep = "\t", as.is = TRUE)
+j<-vector(mode = "integer", length = 0)
+l<-vector(mode = "integer", length = 0)
+for(i in 1:length(GL_Gly_TCA_SC$V1)){
+  l<-which(GL_Orthologues$V2==GL_Gly_TCA_SC[i, 1])
+  if(length(l)>0){
+    j<-c(j, which(GL_Orthologues$V2==GL_Gly_TCA_SC[i, 1]))
+  } else {
+    j<-c(j, 3307)
+  }
+}
+Ortho_Gly_TCA_SC<-GL_Orthologues[j, ]
+write.xlsx(Ortho_Gly_TCA_SC, "Orthologues.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Glycolysis_TCA", append = TRUE)
+
+#Now extracting the identified DH genes from the contrast file
+GL_Gly_TCA_DH <- read.table("/Users/vaskar/Desktop/delme/gly_TCA_DH.txt", sep = "\t", as.is = TRUE)
+SaPavsPara_Gly_TCA_DH <- SaPa_MxM2_Para_DH[GL_Gly_TCA_DH$V1, ]
+write.xlsx(SaPavsPara_Gly_TCA_DH, "Orthologues.xlsx", col.names = TRUE, row.names = TRUE, sheetName = "Glycolysis_TCA_DEG", append = TRUE)
