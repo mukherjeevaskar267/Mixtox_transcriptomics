@@ -1,0 +1,1247 @@
+---
+title: "MixTox_Transcriptomics_Downstream_Analysis"
+author: "Vaskar Mukherjee"
+date: "9/9/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# TRANSCRIPTOMIC ANALYSIS
+
+In this project we used high‐throughput phenomics to identify synergistic or antagonistic interactions in chemical mixtures in the yeast Saccharomyces cerevisiae and Debaryomyces hansenii and used transcriptomic analysis to understand the mechanistic basis of the interactions.
+
+Transcriptomics analysis to understand the mechanistic basis of chemical interactions was performed for two chemical interactions for growth rate (growth during the exponential growth phase), identified in our phenomics experiment, that were conserved in both species i.e. NaCl and rapamycin synergism, and salt and paraquat antagonism.
+
+The details of the transcriptomic samples are given in **COMPILED_DATA/SAMPLE_DETAILS.xlsx**
+
+* **UPSTREAM ANALYSIS**
+
+We used the alignment program, HISAT2 (version 2.1.0) [Kim, 2015](https://doi.org/10.1038/nmeth.3317) for mapping next-generation sequencing reads with the reference sequence. Preprocessing of RNA-seq alignments for differential expression calling was performed afterwards using the Python package HTSeq (version 0.11.1) [Anders, 2014](https://doi.org/10.1093/bioinformatics/btu638). The UPSTREAM ANALYSIS RESULTS has been described in details in the [Git_folder](https://github.com/mukherjeevaskar267/Mixtox_transcriptomics/tree/main/UPSTREAM_ANALYSIS)
+
+* **DOWNSTREAM ANALYSIS**
+
+Downstream analysis to identify deferentially expressed genes was performed using the R package DESeq2 (version 1.30.1) [Love, 2014](https://doi.org/10.1186/s13059-014-0550-8).
+
+## INSTALL PACKAGES
+
+The following packages will be frequently used for the entire data analysis and visualization
+
++ ggplot2
++ DESeq2
++ pheatmap      
++ RColorBrewer
+
+## IMPORT DATA
+
+* STEP1 : Save the path of the HTSeq output folder in a variable
+
+```{r Raw_count}
+#for cerevisiae
+Dir_sc <- "RAW_COUNT_DATA/HTSEQ_SC/"
+
+#for hansenii
+Dir_dh <- "RAW_COUNT_DATA/HTSEQ_DH/"
+
+```
+
+* STEP2 : Create a sample table with 3 columns. First column should be "sampleName" i.e. the name identifier of the samples. The second column should be "fileName" i.e. the file name list in this htseq output folder with the correct extentions, and the third column should be condition i.e. the treatment condition. The column names should be exactly same without the quotations. This is necessary for the functions to work properly. You can create this table in excel and then copy paste it in a .txt object. Later it can be read by the read.table function.
+
+```{r sample_info}
+#for cerevisiae
+sampleinfo_sc <- read.table("COMPILED_DATA/sampleTable_SC.txt", header = TRUE, sep = "\t", as.is = TRUE)
+
+#for hansenii
+sampleinfo_dh <- read.table("COMPILED_DATA/sampleTable_DH.txt", header = TRUE, sep = "\t", as.is = TRUE)
+```
+
+* STEP3 : Create the sampleTable object for both dataset
+
+```{r sample_table}
+#for cerevisiae
+sampleTable_sc <- data.frame(sampleName = sampleinfo_sc$sampleName,
+                          fileName = sampleinfo_sc$fileName,
+                          condition = sampleinfo_sc$condition)
+
+#for hansenii
+sampleTable_dh <- data.frame(sampleName = sampleinfo_dh$sampleName,
+                          fileName = sampleinfo_dh$fileName,
+                          condition = sampleinfo_dh$condition)
+```
+
+* STEP4 : Build the DESeqDataSet
+
+```{r DEseq2_objects, message=FALSE, warning=FALSE}
+library(DESeq2)
+#for cerevisiae
+ddsHTSeq_sc <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable_sc,
+                                       directory = Dir_sc,
+                                       design= ~ condition)
+
+#for hansenii
+ddsHTSeq_dh <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable_dh,
+                                       directory = Dir_dh,
+                                       design= ~ condition)
+```
+
+* STEP5 : Print the object
+
+```{r print_dds}
+#for cerevisiae
+ddsHTSeq_sc
+#for hansenii
+ddsHTSeq_dh
+```
+
+
+## PRE-FILTERING
+
+```{r pre_filtering}
+#for cerevisiae
+keep<-rowSums(counts(ddsHTSeq_sc)) >= 10
+dds_SC<-ddsHTSeq_sc[keep, ]
+dds_SC_LOST<-ddsHTSeq_sc[!keep, ]
+#for hansenii
+keep<-rowSums(counts(ddsHTSeq_dh)) >= 10
+dds_DH<-ddsHTSeq_dh[keep, ]
+dds_DH_LOST<-ddsHTSeq_dh[!keep, ]
+```
+
+## DATA-TRANSFORMATION 
+
+Data-transformation functions within DESeq2 are provided for applications other than differential testing, for example clustering of samples or other machine learning applications. Those are the ntd (shifted logarithm), rlog (regularized logarithm) and vst (variance stabilizing transformation). The shifted logarithm has elevated standard deviation in the lower count range, and the regularized log to a lesser extent, while for the variance stabilized data the standard deviation is roughly constant along the whole dynamic range. Note that the vertical axis in such plots is the square root of the variance over all samples, so including the variance due to the experimental conditions. While a flat curve of the square root of variance over the mean may seem like the goal of such transformations, this may be unreasonable in the case of datasets with many true differences due to the experimental conditions.
+
+```{r data_transformation}
+#for cerevisiae
+rld_sc <- rlogTransformation(dds_SC)
+vsd_sc <- varianceStabilizingTransformation(dds_SC)
+ntd_sc <- normTransform(dds_SC)
+#for hansenii
+rld_dh <- rlogTransformation(dds_DH)
+vsd_dh <- varianceStabilizingTransformation(dds_DH)
+ntd_dh <- normTransform(dds_DH)
+```
+
+## DATA-VISUALIZATION 1: Effects of transformations on the variance
+
+```{r figure1, echo=FALSE, fig.cap="Figure 1A: Effects of transformations on the variance, S. cerevisiae and rld transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(rld_sc))
+```
+
+```{r figure2, echo=FALSE, fig.cap="Figure 1B: Effects of transformations on the variance, S. cerevisiae and vsd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(vsd_sc))
+```
+
+```{r figure3, echo=FALSE, fig.cap="Figure 1C: Effects of transformations on the variance, S. cerevisiae and ntd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(ntd_sc))
+```
+
+```{r figure4, echo=FALSE, fig.cap="Figure 2A: Effects of transformations on the variance, D. hansenii and rld transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(rld_dh))
+```
+
+```{r figure5, echo=FALSE, fig.cap="Figure 2B: Effects of transformations on the variance, D. hansenii and vsd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(vsd_dh))
+```
+
+```{r figure6, echo=FALSE, fig.cap="Figure 2C: Effects of transformations on the variance, D. hansenii and ntd transformation", fig.width=4, fig.height=4}
+library(vsn)
+meanSdPlot(assay(ntd_dh))
+```
+
+## DATA-VISUALIZATION 2: Plotting PCA 
+
+The above analysis shows that the rld data transformation is most suitable for our dataset. Therefore from now on all analysis will be with the rld dataset
+
+```{r figure7, echo=FALSE, fig.cap="Figure 3: PCA plot, rld and S. cerevisiae", fig.width=8, fig.height=4}
+#for cerevisiae
+plotPCA(rld_sc)
+```
+
+```{r figure8, echo=FALSE, fig.cap="Figure 4: PCA plot, rld and D. hansenii", fig.width=8, fig.height=4}
+#for hansenii
+plotPCA(rld_dh)
+```
+
+## DATA-VISUALIZATION 3 > SIMILARITY MATRIX
+
+Calculation of the euclidean distance of the transformed data. We need to transpose the data since we want to calculate the distance between samples rather than among genes. So we need the samples as rows rather than columns
+
+```{r similarity_matrix}
+library(DESeq2)
+library(pheatmap)        
+library(RColorBrewer)
+#for cerevisiae
+sampleDists_SC <- dist(t(assay(rld_sc)))
+#Creating the corresponding matrix
+sampleDistMatrix_SC <- as.matrix(sampleDists_SC)
+#creating a distance matrix tagging the groups of the samples
+sample_data_sc<-data.frame(Group=sampleinfo_sc$condition)
+row.names(sample_data_sc)<-sampleinfo_sc$sampleName
+#defining the colors we want to use depending on the condition
+annotation_sc <- list(Group = c(Ctrl="green", Para="brown", Rapa="red", Salt="cyan", SaPa="blue", SaRa="magenta"))
+
+#for hansenii
+sampleDists_DH <- dist(t(assay(rld_dh)))
+#Creating the corresponding matrix
+sampleDistMatrix_DH <- as.matrix(sampleDists_DH)
+#creating a distance matrix tagging the groups of the samples
+sample_data_dh<-data.frame(Group=sampleinfo_dh$condition)
+row.names(sample_data_dh)<-sampleinfo_dh$sampleName
+#defining the colors we want to use depending on the condition
+annotation_dh <- list(Group = c(Ctrl="green", Para="brown", Rapa="red", Salt1="cyan", Salt2="turquoise4", SaPa="blue", SaRa="magenta"))
+
+#Make a color palette for heatmap
+colfunc<-colorRampPalette(c("goldenrod4", "goldenrod", "white", "turquoise", "turquoise4"))
+```
+
+Plotting the heatmap for cerevisiae
+```{r figure9, echo=FALSE, fig.cap="Figure 5: Similarity matrix, rld and S. cerevisiae", fig.width=8, fig.height=8}
+pheatmap(sampleDistMatrix_SC, 
+         annotation_col = sample_data_sc, 
+         annotation_colors = annotation_sc, 
+         color = colfunc(50))
+```
+
+Plotting the heatmap for hansenii
+```{r figure10, echo=FALSE, fig.cap="Figure 6: Similarity matrix, rld and D. hansenii", fig.width=8, fig.height=8}
+pheatmap(sampleDistMatrix_DH, 
+         annotation_col = sample_data_dh, 
+         annotation_colors = annotation_dh, 
+         color = colfunc(50))
+```
+
+## DIFFERENTIALLY EXPRESSED GENES (DEGs) ANALYSIS
+
+The standard differential expression analysis steps are wrapped into a single function, DESeq.The estimation steps performed by this function are described in the Methods section of the DESeq2 publication [Love, 2014](https://doi.org/10.1186/s13059-014-0550-8).
+
+For differential testing it is recommended to use the DESeq function applied directly to the raw counts. 
+
+```{r DEG1, message=FALSE}
+#for cerevisiae
+dds_T_SC <- DESeq(dds_SC)
+#for hansenii
+dds_T_DH <- DESeq(dds_DH)
+```
+
+### DEGs COMPARED TO CONTROL (FOR CEREVISIAE)
+
+* **STEP1**:Data Preparation
+```{r DEG2}
+#differential expression Salt vs Ctrl
+res_SC_Salt <-results(dds_T_SC, contrast=c("condition", "Salt", "Ctrl"))
+#differential expression Para vs Ctrl 
+res_SC_Para <-results(dds_T_SC, contrast=c("condition", "Para", "Ctrl"))
+#differential expression SaPa vs Ctrl
+res_SC_SaPa <-results(dds_T_SC, contrast=c("condition", "SaPa", "Ctrl"))
+#differential expression Rapa vs Ctrl
+res_SC_Rapa <-results(dds_T_SC, contrast=c("condition", "Rapa", "Ctrl"))
+#differential expression SaRa vs Ctrl
+res_SC_SaRa <-results(dds_T_SC, contrast=c("condition", "SaRa", "Ctrl"))
+#differential expression SaPa vs Salt
+res_SC_MX_SaPavsSalt <-results(dds_T_SC, contrast=c("condition", "SaPa", "Salt"))
+#differential expression SaPa vs Para
+res_SC_MX_SaPavsPara <-results(dds_T_SC, contrast=c("condition", "SaPa", "Para"))
+#differential expression SaRa vs Salt
+res_SC_MX_SaRavsSalt <-results(dds_T_SC, contrast=c("condition", "SaRa", "Salt"))
+#differential expression SaRa vs Rapa
+res_SC_MX_SaRavsRapa <-results(dds_T_SC, contrast=c("condition", "SaRa", "Rapa"))
+```
+
+* **STEP2**:Making the dataframe
+```{r DEG3}
+salt_SC<-data.frame(res_SC_Salt, stringsAsFactors = FALSE)
+para_SC<-data.frame(res_SC_Para, stringsAsFactors = FALSE)
+rapa_SC<-data.frame(res_SC_Rapa, stringsAsFactors = FALSE)
+SaPa_SC<-data.frame(res_SC_SaPa, stringsAsFactors = FALSE)
+SaRa_SC<-data.frame(res_SC_SaRa, stringsAsFactors = FALSE)
+SaPavsSalt_SC <- data.frame(res_SC_MX_SaPavsSalt, stringsAsFactors = FALSE)
+SaPavsPara_SC <- data.frame(res_SC_MX_SaPavsPara, stringsAsFactors = FALSE)
+SaRavsSalt_SC <- data.frame(res_SC_MX_SaRavsSalt, stringsAsFactors = FALSE)
+SaRavsRapa_SC <- data.frame(res_SC_MX_SaRavsRapa, stringsAsFactors = FALSE)
+```
+
+* **STEP3**:Connecting with the Gene description
+
+```{r DEG4}
+#Import the Gene description file named **Gene_List_SC.tsv** in the **COMPILED_DATA** folder
+Gene_Description_SC <- read.csv(file = "COMPILED_DATA/Gene_List_SC.tsv", 
+                                  header = FALSE, 
+                                  stringsAsFactors = FALSE,
+                                  sep = "\t", quote = "", fill = FALSE)
+
+colnames(Gene_Description_SC) <- c("SGD_DB_ID",
+                                   "SYS_ID",
+                                   "ORG",
+                                   "GENE_SYM",
+                                   "NAME",
+                                   "DESCRIPTION")
+
+row.names(Gene_Description_SC) <- Gene_Description_SC$SYS_ID
+
+#Connect the result data.frame with the gene description
+y <- as.character(rownames(salt_SC))
+x <- Gene_Description_SC[(Gene_Description_SC$SYS_ID %in% y), ]
+
+#column binding with the dataset
+salt_SC_des <- cbind(salt_SC[x$SYS_ID, ], x)
+para_SC_des <- cbind(para_SC[x$SYS_ID, ], x)
+rapa_SC_des <- cbind(rapa_SC[x$SYS_ID, ], x)
+SaPa_SC_des <- cbind(SaPa_SC[x$SYS_ID, ], x)
+SaRa_SC_des <- cbind(SaRa_SC[x$SYS_ID, ], x)
+SaPavsSalt_SC_des <- cbind(SaPavsSalt_SC[x$SYS_ID, ], x)
+SaPavsPara_SC_des <- cbind(SaPavsPara_SC[x$SYS_ID, ], x)
+SaRavsSalt_SC_des <- cbind(SaRavsSalt_SC[x$SYS_ID, ], x)
+SaRavsRapa_SC_des <- cbind(SaRavsRapa_SC[x$SYS_ID, ], x)
+
+#Write table E.g. 
+#write.table(SaRa_SC_des, file = "COMPILED_DATA/SARAvsCTRL_SC.tsv", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE)
+
+```
+
+### DEGs COMPARED TO CONTROL (FOR HANSENII)
+
+* **STEP1**:Data Preparation
+```{r DEG5}
+#differential expression Salt1 vs Ctrl
+res_DH_Salt1 <-results(dds_T_DH, contrast=c("condition", "Salt1", "Ctrl"))
+#differential expression Salt2 vs Ctrl
+res_DH_Salt2 <-results(dds_T_DH, contrast=c("condition", "Salt2", "Ctrl"))
+#differential expression Para vs Ctrl 
+res_DH_Para <-results(dds_T_DH, contrast=c("condition", "Para", "Ctrl"))
+#differential expression SaPa vs Ctrl
+res_DH_SaPa <-results(dds_T_DH, contrast=c("condition", "SaPa", "Ctrl"))
+#differential expression Rapa vs Ctrl
+res_DH_Rapa <-results(dds_T_DH, contrast=c("condition", "Rapa", "Ctrl"))
+#differential expression SaRa vs Ctrl
+res_DH_SaRa <-results(dds_T_DH, contrast=c("condition", "SaRa", "Ctrl"))
+#differential expression SaPa vs Salt1
+res_DH_MX_SaPavsSalt1 <-results(dds_T_DH, contrast=c("condition", "SaPa", "Salt1"))
+#differential expression SaPa vs Para
+res_DH_MX_SaPavsPara <-results(dds_T_DH, contrast=c("condition", "SaPa", "Para"))
+#differential expression SaRa vs Salt
+res_DH_MX_SaRavsSalt2 <-results(dds_T_DH, contrast=c("condition", "SaRa", "Salt2"))
+#differential expression SaRa vs Rapa
+res_DH_MX_SaRavsRapa <-results(dds_T_DH, contrast=c("condition", "SaRa", "Rapa"))
+```
+
+* **STEP2**:Making the dataframe
+```{r DEG6}
+salt1_DH<-data.frame(res_DH_Salt1, stringsAsFactors = FALSE)
+salt2_DH<-data.frame(res_DH_Salt2, stringsAsFactors = FALSE)
+para_DH<-data.frame(res_DH_Para, stringsAsFactors = FALSE)
+rapa_DH<-data.frame(res_DH_Rapa, stringsAsFactors = FALSE)
+SaPa_DH<-data.frame(res_DH_SaPa, stringsAsFactors = FALSE)
+SaRa_DH<-data.frame(res_DH_SaRa, stringsAsFactors = FALSE)
+SaPavsSalt1_DH <- data.frame(res_DH_MX_SaPavsSalt1, stringsAsFactors = FALSE)
+SaPavsPara_DH <- data.frame(res_DH_MX_SaPavsPara, stringsAsFactors = FALSE)
+SaRavsSalt2_DH <- data.frame(res_DH_MX_SaRavsSalt2, stringsAsFactors = FALSE)
+SaRavsRapa_DH <- data.frame(res_DH_MX_SaRavsRapa, stringsAsFactors = FALSE)
+
+```
+
+* **STEP3**:Connecting with the Gene description
+
+Gene decsription and GO annotations for D. hansenii was downloaded from [uniprot](https://www.uniprot.org/uniprot/?query=organism:%22Debaryomyces%20hansenii%20(strain%20ATCC%2036239%20/%20CBS%20767%20/%20BCRC%2021394%20/%20JCM%201990%20/%20NBRC%200083%20/%20IGC%202968)%20[284592]%22#:~:text=Align-,Download,-Add%20to%20basket)
+
+Orthologous gene analysis between S. cerevisiae and D. hansenii was performed using [Orthovenn2, Ling Xu et al. 2019](https://doi.org/10.1093/nar/gkz333)
+
+The **orthologs** output from the **Orthovenn2** was manually curated in the following way to connect it with the Gene description list obtained from uniprot. 
+
+* First, all pairs without DEHA Systematic gene ID of D. hasenii was eliminated from the list. 
+* Next, All p (protein) in the list was then modified to g (gene) to keep similarity with the gene ID in gene description file from uniprot. 
+
+```{r DEG7}
+#Import the Gene description file named **uniprot_DH_CBS767_Gene_List.tab** in the **COMPILED_DATA** folder
+Gene_Description_DH <- read.csv(file = "COMPILED_DATA/uniprot_DH_CBS767_Gene_List.tab", 
+                                  header = TRUE, 
+                                  stringsAsFactors = FALSE,
+                                  sep = "\t", quote = "", fill = FALSE)
+
+colnames(Gene_Description_DH) <- c("UNIPROT_ENTRY",
+                                   "STATUS",
+                                   "PROTEIN_NAME",
+                                   "ORG",
+                                   "PROTEIN_LENGTH",
+                                   "SYS_ID",
+                                   "GENE_SYM", 
+                                   "KEGG_CR",
+                                   "GO_ALL",
+                                   "GO_PROCESS",
+                                   "GO_COMPONENT",
+                                   "GO_FUNCTION")
+
+Gene_Description_DH <- Gene_Description_DH[-which(duplicated(Gene_Description_DH$SYS_ID)), ]
+
+row.names(Gene_Description_DH) <- Gene_Description_DH$SYS_ID
+
+# Adding the orthologs of S. cerevisiae to this data.frame
+# We Extracted the Orthologous gene cluster analysis between S. cerevisiae and D. hansenii using Orthovenn2
+
+Ortho <- read.table("COMPILED_DATA/Ortholog_DHvsSC.txt", header = FALSE, sep = "\t", as.is = TRUE)
+colnames(Ortho) <- c("DH_SYS_ID", "SC_SYS_ID", "ORTHO_SCORE")
+x <- data.frame()
+for(i in 1:nrow(Gene_Description_DH)){
+  x <- Ortho[which(Ortho$DH_SYS_ID==Gene_Description_DH$SYS_ID[i]), ]
+  if(nrow(x)==0){
+    Gene_Description_DH[i, 13:14] <- NA
+  } else{
+      Gene_Description_DH[i, 13:14] <- x[1, 2:3]
+    }
+}
+colnames(Gene_Description_DH)[13:14] <- c("SC_SYS_ID", "ORTHO_SCORE")
+
+# Next, we connect some information of the SC ortholog of DH gene
+x <- data.frame()
+for(i in 1:nrow(Gene_Description_DH)){
+  x <- Gene_Description_SC[which(Gene_Description_SC$SYS_ID==Gene_Description_DH$SC_SYS_ID[i]), ]
+  if(nrow(x)==0){
+    Gene_Description_DH[i, 15:18] <- NA
+  } else{
+      Gene_Description_DH[i, 15:18] <- x[1, c(1, 4:6)]
+    }
+}
+colnames(Gene_Description_DH)[15:18] <- c("SGD_DB_ID", "SC_GENE_SYM", "NAME", "DESCRIPTION")
+
+#Connecting the dataset
+y <- as.character(rownames(salt1_DH))
+x <- Gene_Description_DH[(Gene_Description_DH$SYS_ID %in% y), ]
+
+#column binding with the dataset
+salt1_DH_des <- cbind(salt1_DH[x$SYS_ID, ], x)
+salt2_DH_des <- cbind(salt2_DH[x$SYS_ID, ], x)
+para_DH_des <- cbind(para_DH[x$SYS_ID, ], x)
+rapa_DH_des <- cbind(rapa_DH[x$SYS_ID, ], x)
+SaPa_DH_des <- cbind(SaPa_DH[x$SYS_ID, ], x)
+SaRa_DH_des <- cbind(SaRa_DH[x$SYS_ID, ], x)
+SaPavsSalt1_DH_des <- cbind(SaPavsSalt1_DH[x$SYS_ID, ], x)
+SaPavsPara_DH_des <- cbind(SaPavsPara_DH[x$SYS_ID, ], x)
+SaRavsSalt2_DH_des <- cbind(SaRavsSalt2_DH[x$SYS_ID, ], x)
+SaRavsRapa_DH_des <- cbind(SaRavsRapa_DH[x$SYS_ID, ], x)
+
+#Write table E.g. 
+#write.table(salt1_DH_des, file = "COMPILED_DATA/DEG_DATA_DH/SALT1vsCTRL_DH.tsv", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE)
+
+```
+
+
+### DEGs COMPARED TO CONTROL: DATA VISUALIZATION
+
+#### HISTOGRAM
+
+* Plotting the Effect size of DEGs
+```{r figure11, echo=FALSE, fig.cap="Figure 7: Histogram, Single compound effect size", fig.width=8, fig.height=16}
+par(mfrow=c(4,2))
+hist(salt_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(600mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(salt1_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(650mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+plot(0,type='n',axes=FALSE,ann=FALSE)
+hist(salt2_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Salt(1200mM)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(para_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Paraquat (1000 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(para_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Paraquat (500 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(rapa_SC$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Rapamycin (1 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+hist(rapa_DH$log2FoldChange,
+     breaks = 50,
+     xlab = "log2FoldChange", 
+     ylab = "Frequency",
+     main = "Control vs Rapamycin (1 ug/ml)",
+     col = "skyblue",
+     xlim = c(-6, 6),
+     ylim = c(0, 3000))
+```
+
+#### MA-PLOT 
+
+A scatter plot of log2 fold changes (on the y-axis) versus the mean of normalized counts (on the x-axis)
+
+* **STEP1**:Data Preparation
+
+Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. To shrink the LFC, we pass the dds object to the function lfcShrink. Below we specify to use the apeglm method for effect size shrinkage [Zhu, Ibrahim, and Love 2018](https://doi.org/10.1093/bioinformatics/bty895), which improves on the previous estimator.
+
+We provide the dds object and the name or number of the coefficient we want to shrink, where the number refers to the order of the coefficient as it appears after using the **resultsNames()** function
+
+```{r MA_plot, message=FALSE}
+#
+resultsNames(dds_T_SC)
+resultsNames(dds_T_DH)
+#Data_preparation_SC
+resLFC_SC_Salt <- lfcShrink(dds_T_SC, coef = "condition_Salt_vs_Ctrl")
+resLFC_SC_Para <- lfcShrink(dds_T_SC, coef = "condition_Para_vs_Ctrl")
+resLFC_SC_SaPa <- lfcShrink(dds_T_SC, coef = "condition_SaPa_vs_Ctrl")
+resLFC_SC_Rapa <- lfcShrink(dds_T_SC, coef = "condition_Rapa_vs_Ctrl")
+resLFC_SC_SaRa <- lfcShrink(dds_T_SC, coef = "condition_SaRa_vs_Ctrl")
+#Data_preparation_DH
+resLFC_DH_Salt1 <- lfcShrink(dds_T_DH, coef = "condition_Salt1_vs_Ctrl")
+resLFC_DH_Salt2 <- lfcShrink(dds_T_DH, coef = "condition_Salt2_vs_Ctrl")
+resLFC_DH_Para <- lfcShrink(dds_T_DH, coef = "condition_Para_vs_Ctrl")
+resLFC_DH_SaPa <- lfcShrink(dds_T_DH, coef = "condition_SaPa_vs_Ctrl")
+resLFC_DH_Rapa <- lfcShrink(dds_T_DH, coef = "condition_Rapa_vs_Ctrl")
+resLFC_DH_SaRa <- lfcShrink(dds_T_DH, coef = "condition_SaRa_vs_Ctrl")
+``` 
+
+* **STEP2**: PLOT the MA-plot
+
+A. UNSHRUNKEN
+
+```{r figure12, echo=FALSE, fig.cap="Figure 8: plotMA unshrunken, Single compound effect size", fig.width=8, fig.height=16}
+library(apeglm)
+par(mfrow=c(4,2))
+plotMA(res_SC_Salt, ylim = c(-8, 8), main = "Control vs Salt(600mM)")
+plotMA(res_DH_Salt1, ylim = c(-8, 8), main = "Control vs Salt(650mM)")
+plot(0,type='n',axes=FALSE,ann=FALSE)
+plotMA(res_DH_Salt2, ylim = c(-8, 8), main = "Control vs Salt(1200mM)")
+plotMA(res_SC_Para, ylim = c(-8, 8), main = "Control vs Paraquat (1000 ug/ml)")
+plotMA(res_DH_Para, ylim = c(-8, 8), main = "Control vs Paraquat (500 ug/ml)")
+plotMA(res_SC_Rapa, ylim = c(-8, 8), main = "Control vs Rapamycin (1 ug/ml)")
+plotMA(res_DH_Rapa, ylim = c(-8, 8), main = "Control vs Rapamycin (1 ug/ml)")
+```
+
+B. SHRUNKEN USING APEGLM
+
+```{r figure13, echo=FALSE, fig.cap="Figure 9: plotMA shrunken, Single compound effect size", fig.width=8, fig.height=16}
+library(apeglm)
+par(mfrow=c(4,2))
+plotMA(resLFC_SC_Salt, ylim = c(-8, 8), main = "Control vs Salt(600mM)")
+plotMA(resLFC_DH_Salt1, ylim = c(-8, 8), main = "Control vs Salt(650mM)")
+plot(0,type='n',axes=FALSE,ann=FALSE)
+plotMA(resLFC_DH_Salt2, ylim = c(-8, 8), main = "Control vs Salt(1200mM)")
+plotMA(resLFC_SC_Para, ylim = c(-8, 8), main = "Control vs Paraquat (1000 ug/ml)")
+plotMA(resLFC_DH_Para, ylim = c(-8, 8), main = "Control vs Paraquat (500 ug/ml)")
+plotMA(resLFC_SC_Rapa, ylim = c(-8, 8), main = "Control vs Rapamycin (1 ug/ml)")
+plotMA(resLFC_DH_Rapa, ylim = c(-8, 8), main = "Control vs Rapamycin (1 ug/ml)")
+```
+
+
+#### VOLCANO PLOT
+
+A. S. CEREVISIAE SINGLE COMPOUND
+
+```{r figure14, echo=FALSE, fig.cap="Figure 10: Volcano plot- SALT vs CTRL, S. cerevisiae, Single compound effect size", fig.width=8, fig.height=8}
+library(EnhancedVolcano)
+EnhancedVolcano(res_SC_Salt,
+                lab = rownames(res_SC_Salt),
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                title = 'Salt vs Ctrl',
+                pCutoff = 0.001,
+                FCcutoff = 1,
+                pointSize = 1.0,
+                labSize = 6.0)
+```
+
+```{r figure15, echo=FALSE, fig.cap="Figure 11: Volcano plot- PARA vs CTRL, S. cerevisiae, Single compound effect size", fig.width=8, fig.height=8}
+library(EnhancedVolcano)
+EnhancedVolcano(res_SC_Para,
+                lab = rownames(res_SC_Para),
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                title = 'Paraquat vs Ctrl',
+                pCutoff = 0.001,
+                FCcutoff = 1,
+                pointSize = 1.0,
+                labSize = 6.0)
+```
+
+```{r figure16, echo=FALSE, fig.cap="Figure 12: Volcano plot- RAPA vs CTRL, S. cerevisiae, Single compound effect size", fig.width=8, fig.height=8}
+library(EnhancedVolcano)
+EnhancedVolcano(res_SC_Rapa,
+                lab = rownames(res_SC_Rapa),
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                title = 'Rapamycin vs Ctrl',
+                pCutoff = 0.001,
+                FCcutoff = 1,
+                pointSize = 1.0,
+                labSize = 6.0)
+```
+
+## GROWTH RATE RELATED GENES EXPRESSION ANALYSIS
+
+Import growth-related expression data from [brauer et al., 2008](https://doi.org/10.1091/mbc.e07-08-0779) file named **table_s1_Brauer_2008.tab** in the **COMPILED_DATA** folder 
+
+```{r SP_analysis1}
+Gene_ex_data <- read.csv(file = "COMPILED_DATA/table_s1_Brauer_2008.txt", 
+                                  header = TRUE, 
+                                  stringsAsFactors = FALSE,
+                                  sep = "\t", na.strings = "")
+
+Gene_names_ex_down <- Gene_ex_data$ORF[which(Gene_ex_data$Growth.Rate.Response..1.5SD=="down")]
+Gene_names_ex_up <- Gene_ex_data$ORF[which(Gene_ex_data$Growth.Rate.Response..1.5SD=="up")]
+```
+
+### BOXPLOTS GROWTH RELATED GENES S. CEREVISIAE
+
+```{r figure17, echo=FALSE, fig.cap="Figure 13: Growth related genes, boxplot log2fold change, S. cerevisiae, Gene set that downregulate with higher growh rate", fig.width=12, fig.height=8}
+
+boxplot(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_down)], 
+        SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_down)],
+        para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_down)],
+        rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_down)],
+        SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_down)],
+        names = c("SaltvsCtrl", "SaPavsCtrl", "ParavsCtrl", "RapaavsCtrl", "SaRavsCtrl"),
+        cex.axis=1.2,
+        col = c("gray", "green", "red", "blue", "magenta"),
+        ylab= "log2FoldChange")
+```
+
+```{r figure18, echo=FALSE, fig.cap="Figure 14: Growth related genes, boxplot log2fold change, S. cerevisiae, Gene set that upregulate with higher growh rate", fig.width=12, fig.height=8}
+boxplot(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_up)], 
+        SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_up)],
+        para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_up)],
+        rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_up)],
+        SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_up)],
+        names = c("SaltvsCtrl", "SaPavsCtrl", "ParavsCtrl", "RapaavsCtrl", "SaRavsCtrl"),
+        cex.axis=1.2,
+        col = c("gray", "green", "red", "blue", "magenta"),
+        ylab= "log2FoldChange")
+
+``` 
+
+### BOXPLOTS GROWTH RELATED GENES D. HANSENII
+
+```{r figure19, echo=FALSE, fig.cap="Figure 15: Growth related genes, boxplot log2fold change, D. hansenii orthologoues, Gene set that downregulate with higher growh rate", fig.width=12, fig.height=8}
+
+boxplot(salt1_DH_des$log2FoldChange[which(salt1_DH_des$SC_SYS_ID %in% Gene_names_ex_down)], 
+        SaPa_DH_des$log2FoldChange[which(SaPa_DH_des$SC_SYS_ID %in% Gene_names_ex_down)],
+        salt2_DH_des$log2FoldChange[which(salt2_DH_des$SC_SYS_ID %in% Gene_names_ex_down)],
+        para_DH_des$log2FoldChange[which(para_DH_des$SC_SYS_ID %in% Gene_names_ex_down)],
+        rapa_DH_des$log2FoldChange[which(rapa_DH_des$SC_SYS_ID %in% Gene_names_ex_down)],
+        SaRa_DH_des$log2FoldChange[which(SaRa_DH_des$SC_SYS_ID %in% Gene_names_ex_down)],
+        names = c("Salt1vsCtrl", "SaPavsCtrl", "Salt2vsCtrl", "ParavsCtrl", "RapaavsCtrl", "SaRavsCtrl"),
+        cex.axis=1.2,
+        col = c("gray", "green", "yellow", "red", "blue", "magenta"),
+        ylab= "log2FoldChange")
+```
+
+```{r figure20, echo=FALSE, fig.cap="Figure 16: Growth related genes, boxplot log2fold change, D. hansenii orthologoues, Gene set that upregulate with higher growh rate", fig.width=12, fig.height=8}
+
+boxplot(salt1_DH_des$log2FoldChange[which(salt1_DH_des$SC_SYS_ID %in% Gene_names_ex_up)], 
+        SaPa_DH_des$log2FoldChange[which(SaPa_DH_des$SC_SYS_ID %in% Gene_names_ex_up)],
+        salt2_DH_des$log2FoldChange[which(salt2_DH_des$SC_SYS_ID %in% Gene_names_ex_up)],
+        para_DH_des$log2FoldChange[which(para_DH_des$SC_SYS_ID %in% Gene_names_ex_up)],
+        rapa_DH_des$log2FoldChange[which(rapa_DH_des$SC_SYS_ID %in% Gene_names_ex_up)],
+        SaRa_DH_des$log2FoldChange[which(SaRa_DH_des$SC_SYS_ID %in% Gene_names_ex_up)],
+        names = c("Salt1vsCtrl", "SaPavsCtrl", "Salt2vsCtrl", "ParavsCtrl", "RapaavsCtrl", "SaRavsCtrl"),
+        cex.axis=1.2,
+        col = c("gray", "green", "yellow", "red", "blue", "magenta"),
+        ylab= "log2FoldChange")
+```
+
+
+## THE GROWTH RATE VS EXPRESSION OF GROWTH RELATED GENES
+
+### IMPORT PHENOMICS DATA
+
+```{r SP_analysis2}
+#Importing the S. cerevisiae phenomics data
+Phenodata_sc <- read.table("COMPILED_DATA/PHENOMICS_DATA/sc_whole_data.txt", header = TRUE, sep = "\t", as.is = TRUE)
+
+#Importing the D. hansenii phenomics data
+Phenodata_dh <- read.table("COMPILED_DATA/PHENOMICS_DATA/dh_whole_data.txt", header = TRUE, sep = "\t", as.is = TRUE)
+```
+
+### GROWTH RATE VS EXPRESSION SCATTER PLOT S. CEREVISIAE
+
+```{r SP_analysis3}
+test_sc_p <- data.frame()
+
+test_sc_p[1, 1] <- "salt_SC"
+test_sc_p[1, 2] <- mean(Phenodata_sc$Growth.Rate[which(Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                         Phenodata_sc$concB == 0)])
+test_sc_p[1, 3] <- sd(Phenodata_sc$Growth.Rate[which(Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                         Phenodata_sc$concB == 0)])
+test_sc_p[1, 4] <- mean(na.omit(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[1, 5] <- sd(na.omit(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[1, 6] <- mean(na.omit(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+test_sc_p[1, 7] <- sd(na.omit(salt_SC_des$log2FoldChange[which(salt_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+
+
+test_sc_p[2, 1] <- "para_SC"
+test_sc_p[2, 2] <- mean(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Paraquat" & 
+                                                         Phenodata_sc$concA == 1000 &
+                                                         Phenodata_sc$concB == 0) |
+                                                   (Phenodata_sc$ChemB == "Paraquat" & 
+                                                         Phenodata_sc$concA == 0 &
+                                                         Phenodata_sc$concB == 1000)
+                                                   )])
+test_sc_p[2, 3] <- sd(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Paraquat" & 
+                                                         Phenodata_sc$concA == 1000 &
+                                                         Phenodata_sc$concB == 0) |
+                                                   (Phenodata_sc$ChemB == "Paraquat" & 
+                                                         Phenodata_sc$concA == 0 &
+                                                         Phenodata_sc$concB == 1000)
+                                                   )])
+test_sc_p[2, 4] <- mean(na.omit(para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[2, 5] <- sd(na.omit(para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[2, 6] <- mean(na.omit(para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+test_sc_p[2, 7] <- sd(na.omit(para_SC_des$log2FoldChange[which(para_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+
+
+test_sc_p[3, 1] <- "rapa_SC"
+test_sc_p[3, 2] <- mean(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Rapamycin" & 
+                                                         Phenodata_sc$concA == 1 &
+                                                         Phenodata_sc$concB == 0) |
+                                                   (Phenodata_sc$ChemB == "Rapamycin" & 
+                                                         Phenodata_sc$concA == 0 &
+                                                         Phenodata_sc$concB == 1)
+                                                   )])
+test_sc_p[3, 3] <- sd(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Rapamycin" & 
+                                                         Phenodata_sc$concA == 1 &
+                                                         Phenodata_sc$concB == 0) |
+                                                   (Phenodata_sc$ChemB == "Rapamycin" & 
+                                                         Phenodata_sc$concA == 0 &
+                                                         Phenodata_sc$concB == 1)
+                                                   )])
+test_sc_p[3, 4] <- mean(na.omit(rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[3, 5] <- sd(na.omit(rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[3, 6] <- mean(na.omit(rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+test_sc_p[3, 7] <- sd(na.omit(rapa_SC_des$log2FoldChange[which(rapa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+
+test_sc_p[4, 1] <- "SaPa_SC"
+test_sc_p[4, 2] <- mean(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                          Phenodata_sc$ChemB == "Paraquat" &
+                                                         Phenodata_sc$concB == 1000)
+                                                   )])
+test_sc_p[4, 3] <- sd(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                          Phenodata_sc$ChemB == "Paraquat" &
+                                                         Phenodata_sc$concB == 1000)
+                                                   )])
+test_sc_p[4, 4] <- mean(na.omit(SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[4, 5] <- sd(na.omit(SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[4, 6] <- mean(na.omit(SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+test_sc_p[4, 7] <- sd(na.omit(SaPa_SC_des$log2FoldChange[which(SaPa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+
+test_sc_p[5, 1] <- "SaRa_SC"
+test_sc_p[5, 2] <- mean(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                          Phenodata_sc$ChemB == "Rapamycin" &
+                                                         Phenodata_sc$concB == 1)
+                                                   )])
+test_sc_p[5, 3] <- sd(Phenodata_sc$Growth.Rate[which((Phenodata_sc$ChemA == "Salt" & 
+                                                         Phenodata_sc$concA == 600 &
+                                                          Phenodata_sc$ChemB == "Rapamycin" &
+                                                         Phenodata_sc$concB == 1)
+                                                   )])
+test_sc_p[5, 4] <- mean(na.omit(SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[5, 5] <- sd(na.omit(SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_down)]))
+test_sc_p[5, 6] <- mean(na.omit(SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+test_sc_p[5, 7] <- sd(na.omit(SaRa_SC_des$log2FoldChange[which(SaRa_SC_des$SYS_ID %in% Gene_names_ex_up)]))
+
+colnames(test_sc_p) <- c("Condition", 
+                         "GR_Mean", 
+                         "GR_SD", 
+                         "lfc_mean_down", 
+                         "lfc_SD_down", 
+                         "lfc_mean_up",
+                         "lfc_SD_up")
+
+test_sc_p <- test_sc_p[order(test_sc_p$GR_Mean), ]
+
+```
+
+```{r figure21, echo=FALSE, fig.cap="Figure 14: Growth rate vs Mean log2fold change, S. cerevisiae, with Gene set that downregulate with higher growh rate", fig.width=8, fig.height=8}
+
+plot(test_sc_p$GR_Mean, test_sc_p$lfc_mean_down,
+     xlim = range(c(test_sc_p$GR_Mean + test_sc_p$GR_SD, test_sc_p$GR_Mean - test_sc_p$GR_SD)),
+     ylim = range(c(test_sc_p$lfc_mean_down + test_sc_p$lfc_SD_down, test_sc_p$lfc_mean_down - test_sc_p$lfc_SD_down)),
+     xlab = "Mean Growth Rate",
+     ylab = "Mean_lfc",
+     main = "Growth rate vs Mean Expresssion 
+     (GR Genes that downregulate with higher growh rate)")
+text(test_sc_p$GR_Mean, test_sc_p$lfc_mean_down,
+     labels=test_sc_p$Condition, 
+     cex= 0.8,
+     offset = 1,
+     pos = 3)
+arrows(test_sc_p$GR_Mean, 
+       test_sc_p$lfc_mean_down - test_sc_p$lfc_SD_down, 
+       test_sc_p$GR_Mean, 
+       test_sc_p$lfc_mean_down + test_sc_p$lfc_SD_down,
+       length = 0.05,
+       angle=90, 
+       code=3)
+arrows(test_sc_p$GR_Mean - test_sc_p$GR_SD, 
+       test_sc_p$lfc_mean_down, 
+       test_sc_p$GR_Mean + test_sc_p$GR_SD,
+       test_sc_p$lfc_mean_down, 
+       length = 0.05,
+       angle=90, 
+       code=3)
+
+```
+
+```{r figure22, echo=FALSE, fig.cap="Figure 14: Growth rate vs Mean log2fold change, S. cerevisiae, with Gene set that upregulate with higher growh rate", fig.width=8, fig.height=8}
+
+plot(test_sc_p$GR_Mean, test_sc_p$lfc_mean_up,
+     xlim = range(c(test_sc_p$GR_Mean + test_sc_p$GR_SD, test_sc_p$GR_Mean - test_sc_p$GR_SD)),
+     ylim = range(c(test_sc_p$lfc_mean_up + test_sc_p$lfc_SD_up, test_sc_p$lfc_mean_up - test_sc_p$lfc_SD_up)),
+     xlab = "Mean Growth Rate",
+     ylab = "Mean_lfc",
+     main = "Growth rate vs Mean Expresssion 
+     (GR Genes that upregulate with higher growh rate)")
+text(test_sc_p$GR_Mean, test_sc_p$lfc_mean_up,
+     labels=test_sc_p$Condition, 
+     cex= 0.8,
+     offset = 1,
+     pos = 3)
+arrows(test_sc_p$GR_Mean, 
+       test_sc_p$lfc_mean_up - test_sc_p$lfc_SD_up, 
+       test_sc_p$GR_Mean, 
+       test_sc_p$lfc_mean_up + test_sc_p$lfc_SD_up,
+       length = 0.05,
+       angle=90, 
+       code=3)
+arrows(test_sc_p$GR_Mean - test_sc_p$GR_SD, 
+       test_sc_p$lfc_mean_up, 
+       test_sc_p$GR_Mean + test_sc_p$GR_SD,
+       test_sc_p$lfc_mean_up, 
+       length = 0.05,
+       angle=90, 
+       code=3)
+
+```
+
+### GROWTH RATE VS EXPRESSION SCATTER PLOT D. HANSENII
+
+To Do
+
+
+## GO ENRICHMENT ANALYSIS
+
+We performed GO enrichment analysis for both species for
+
+* Single compound vs Control / Basal condition
+* Mixture vs Single compound 
+
+### SINGLE COMPOUND / MIXTURE vs BASAL CONDITION
+
+#### SALT (600mM) vs CTRL (SC)
+
+```{r GO_analysis1}
+# WITH GROWTH RELATED GENES
+
+GO_salt_SC_all <- salt_SC_des[which(abs(salt_SC_des$log2FoldChange) >= 1 
+                                              & salt_SC_des$padj <= 0.05), 7]
+GO_salt_SC_up <- salt_SC_des[which(salt_SC_des$log2FoldChange>= 1 
+                                              & salt_SC_des$padj <= 0.05), 7]
+GO_salt_SC_down <- salt_SC_des[which(salt_SC_des$log2FoldChange <= -1 
+                                              & salt_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+#Extracting GROWTH RELATED GENES SGD ID
+
+GRG_ALL_SGD_DB_ID <- salt_SC_des$SGD_DB_ID[which(salt_SC_des$SYS_ID %in% c(Gene_names_ex_up, Gene_names_ex_down))]
+
+# Writing the Background set of SGD_ID i.e. all SGD_ID without Growth related gene IDs
+
+BACKGROUND_GENESET_SGD_DB_ID <- salt_SC_des[which(!(salt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+# Extracting list for GO analysis
+
+GO_salt_SC_all_wo_GRG <- salt_SC_des[which((abs(salt_SC_des$log2FoldChange) >= 1 & salt_SC_des$padj <= 0.05)
+                                                     & !(salt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_salt_SC_up_wo_GRG <- salt_SC_des[which((salt_SC_des$log2FoldChange >= 1 & salt_SC_des$padj <= 0.05)
+                                                     & !(salt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_salt_SC_down_wo_GRG <- salt_SC_des[which((salt_SC_des$log2FoldChange <= -1 & salt_SC_des$padj <= 0.05)
+                                                     & !(salt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_salt_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_salt_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+#write.table(BACKGROUND_GENESET_SGD_DB_ID, file = "COMPILED_DATA/GO_GENE_LISTS/BACKGROUND_GENESET_SGD_DB_ID.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+
+#### PARA (1000 ug/ml) vs CTRL (SC)
+
+```{r GO_analysis2}
+# WITH GROWTH RELATED GENES
+
+GO_para_SC_all <- para_SC_des[which(abs(para_SC_des$log2FoldChange) >= 1 
+                                              & para_SC_des$padj <= 0.05), 7]
+GO_para_SC_up <- para_SC_des[which(para_SC_des$log2FoldChange>= 1 
+                                              & para_SC_des$padj <= 0.05), 7]
+GO_para_SC_down <- para_SC_des[which(para_SC_des$log2FoldChange <= -1 
+                                              & para_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_para_SC_all_wo_GRG <- para_SC_des[which((abs(para_SC_des$log2FoldChange) >= 1 & para_SC_des$padj <= 0.05)
+                                                     & !(para_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_para_SC_up_wo_GRG <- para_SC_des[which((para_SC_des$log2FoldChange >= 1 & para_SC_des$padj <= 0.05)
+                                                     & !(para_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_para_SC_down_wo_GRG <- para_SC_des[which((para_SC_des$log2FoldChange <= -1 & para_SC_des$padj <= 0.05)
+                                                     & !(para_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_para_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_para_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+#### RAPA (1 ug/ml) vs CTRL (SC)
+
+```{r GO_analysis3}
+# WITH GROWTH RELATED GENES
+
+GO_rapa_SC_all <- rapa_SC_des[which(abs(rapa_SC_des$log2FoldChange) >= 1 
+                                              & rapa_SC_des$padj <= 0.05), 7]
+GO_rapa_SC_up <- rapa_SC_des[which(rapa_SC_des$log2FoldChange>= 1 
+                                              & rapa_SC_des$padj <= 0.05), 7]
+GO_rapa_SC_down <- rapa_SC_des[which(rapa_SC_des$log2FoldChange <= -1 
+                                              & rapa_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_rapa_SC_all_wo_GRG <- rapa_SC_des[which((abs(rapa_SC_des$log2FoldChange) >= 1 & rapa_SC_des$padj <= 0.05)
+                                                     & !(rapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_rapa_SC_up_wo_GRG <- rapa_SC_des[which((rapa_SC_des$log2FoldChange >= 1 & rapa_SC_des$padj <= 0.05)
+                                                     & !(rapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_rapa_SC_down_wo_GRG <- rapa_SC_des[which((rapa_SC_des$log2FoldChange <= -1 & rapa_SC_des$padj <= 0.05)
+                                                     & !(rapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_rapa_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_rapa_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+#### SAPA (600 mM salt and 1000 ug/ml paraquat) vs CTRL (SC)
+
+```{r GO_analysis4}
+# WITH GROWTH RELATED GENES
+
+GO_SaPa_SC_all <- SaPa_SC_des[which(abs(SaPa_SC_des$log2FoldChange) >= 1 
+                                              & SaPa_SC_des$padj <= 0.05), 7]
+GO_SaPa_SC_up <- SaPa_SC_des[which(SaPa_SC_des$log2FoldChange>= 1 
+                                              & SaPa_SC_des$padj <= 0.05), 7]
+GO_SaPa_SC_down <- SaPa_SC_des[which(SaPa_SC_des$log2FoldChange <= -1 
+                                              & SaPa_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPa_SC_all_wo_GRG <- SaPa_SC_des[which((abs(SaPa_SC_des$log2FoldChange) >= 1 & SaPa_SC_des$padj <= 0.05)
+                                                     & !(SaPa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPa_SC_up_wo_GRG <- SaPa_SC_des[which((SaPa_SC_des$log2FoldChange >= 1 & SaPa_SC_des$padj <= 0.05)
+                                                     & !(SaPa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPa_SC_down_wo_GRG <- SaPa_SC_des[which((SaPa_SC_des$log2FoldChange <= -1 & SaPa_SC_des$padj <= 0.05)
+                                                     & !(SaPa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaPa_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaPa_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+#### SARA (600 mM salt and 1 ug/ml rapamycin) vs CTRL (SC)
+
+```{r GO_analysis5}
+# WITH GROWTH RELATED GENES
+
+GO_SaRa_SC_all <- SaRa_SC_des[which(abs(SaRa_SC_des$log2FoldChange) >= 1 
+                                              & SaRa_SC_des$padj <= 0.05), 7]
+GO_SaRa_SC_up <- SaRa_SC_des[which(SaRa_SC_des$log2FoldChange>= 1 
+                                              & SaRa_SC_des$padj <= 0.05), 7]
+GO_SaRa_SC_down <- SaRa_SC_des[which(SaRa_SC_des$log2FoldChange <= -1 
+                                              & SaRa_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRa_SC_all_wo_GRG <- SaRa_SC_des[which((abs(SaRa_SC_des$log2FoldChange) >= 1 & SaRa_SC_des$padj <= 0.05)
+                                                     & !(SaRa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRa_SC_up_wo_GRG <- SaRa_SC_des[which((SaRa_SC_des$log2FoldChange >= 1 & SaRa_SC_des$padj <= 0.05)
+                                                     & !(SaRa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRa_SC_down_wo_GRG <- SaRa_SC_des[which((SaRa_SC_des$log2FoldChange <= -1 & SaRa_SC_des$padj <= 0.05)
+                                                     & !(SaRa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaRa_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaRa_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+### MIXTURE vs SINGLE COMPOUND
+
+#### SAPA (600 mM salt and 1000 ug/ml paraquat) vs SALT (600 mM) (SC)
+
+```{r GO_analysis6}
+# WITH GROWTH RELATED GENES
+
+GO_SaPavsSalt_SC_all <- SaPavsSalt_SC_des[which(abs(SaPavsSalt_SC_des$log2FoldChange) >= 1 
+                                              & SaPavsSalt_SC_des$padj <= 0.05), 7]
+GO_SaPavsSalt_SC_up <- SaPavsSalt_SC_des[which(SaPavsSalt_SC_des$log2FoldChange>= 1 
+                                              & SaPavsSalt_SC_des$padj <= 0.05), 7]
+GO_SaPavsSalt_SC_down <- SaPavsSalt_SC_des[which(SaPavsSalt_SC_des$log2FoldChange <= -1 
+                                              & SaPavsSalt_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPavsSalt_SC_all_wo_GRG <- SaPavsSalt_SC_des[which((abs(SaPavsSalt_SC_des$log2FoldChange) >= 1 & SaPavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaPavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPavsSalt_SC_up_wo_GRG <- SaPavsSalt_SC_des[which((SaPavsSalt_SC_des$log2FoldChange >= 1 & SaPavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaPavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPavsSalt_SC_down_wo_GRG <- SaPavsSalt_SC_des[which((SaPavsSalt_SC_des$log2FoldChange <= -1 & SaPavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaPavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaPavsSalt_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaPavsSalt_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+#### SAPA (600 mM salt and 1000 ug/ml paraquat) vs PARA (1000 ug/ml paraquat) (SC)
+
+```{r GO_analysis7}
+# WITH GROWTH RELATED GENES
+
+GO_SaPavsPara_SC_all <- SaPavsPara_SC_des[which(abs(SaPavsPara_SC_des$log2FoldChange) >= 1 
+                                              & SaPavsPara_SC_des$padj <= 0.05), 7]
+GO_SaPavsPara_SC_up <- SaPavsPara_SC_des[which(SaPavsPara_SC_des$log2FoldChange>= 1 
+                                              & SaPavsPara_SC_des$padj <= 0.05), 7]
+GO_SaPavsPara_SC_down <- SaPavsPara_SC_des[which(SaPavsPara_SC_des$log2FoldChange <= -1 
+                                              & SaPavsPara_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPavsPara_SC_all_wo_GRG <- SaPavsPara_SC_des[which((abs(SaPavsPara_SC_des$log2FoldChange) >= 1 & SaPavsPara_SC_des$padj <= 0.05)
+                                                     & !(SaPavsPara_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPavsPara_SC_up_wo_GRG <- SaPavsPara_SC_des[which((SaPavsPara_SC_des$log2FoldChange >= 1 & SaPavsPara_SC_des$padj <= 0.05)
+                                                     & !(SaPavsPara_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaPavsPara_SC_down_wo_GRG <- SaPavsPara_SC_des[which((SaPavsPara_SC_des$log2FoldChange <= -1 & SaPavsPara_SC_des$padj <= 0.05)
+                                                     & !(SaPavsPara_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaPavsPara_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaPavsPara_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+
+#### SARA (600 mM salt and 1 ug/ml rapamycin) vs SALT (600 mM) (SC)
+
+```{r GO_analysis8}
+# WITH GROWTH RELATED GENES
+
+GO_SaRavsSalt_SC_all <- SaRavsSalt_SC_des[which(abs(SaRavsSalt_SC_des$log2FoldChange) >= 1 
+                                              & SaRavsSalt_SC_des$padj <= 0.05), 7]
+GO_SaRavsSalt_SC_up <- SaRavsSalt_SC_des[which(SaRavsSalt_SC_des$log2FoldChange>= 1 
+                                              & SaRavsSalt_SC_des$padj <= 0.05), 7]
+GO_SaRavsSalt_SC_down <- SaRavsSalt_SC_des[which(SaRavsSalt_SC_des$log2FoldChange <= -1 
+                                              & SaRavsSalt_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRavsSalt_SC_all_wo_GRG <- SaRavsSalt_SC_des[which((abs(SaRavsSalt_SC_des$log2FoldChange) >= 1 & SaRavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaRavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRavsSalt_SC_up_wo_GRG <- SaRavsSalt_SC_des[which((SaRavsSalt_SC_des$log2FoldChange >= 1 & SaRavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaRavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRavsSalt_SC_down_wo_GRG <- SaRavsSalt_SC_des[which((SaRavsSalt_SC_des$log2FoldChange <= -1 & SaRavsSalt_SC_des$padj <= 0.05)
+                                                     & !(SaRavsSalt_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaRavsSalt_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaRavsSalt_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+
+#### SARA (600 mM salt and 1 ug/ml rapamycin) vs RAPAMYCIN (1 ug/ml rapamycin) (SC)
+
+```{r GO_analysis9}
+# WITH GROWTH RELATED GENES
+
+GO_SaRavsRapa_SC_all <- SaRavsRapa_SC_des[which(abs(SaRavsRapa_SC_des$log2FoldChange) >= 1 
+                                              & SaRavsRapa_SC_des$padj <= 0.05), 7]
+GO_SaRavsRapa_SC_up <- SaRavsRapa_SC_des[which(SaRavsRapa_SC_des$log2FoldChange>= 1 
+                                              & SaRavsRapa_SC_des$padj <= 0.05), 7]
+GO_SaRavsRapa_SC_down <- SaRavsRapa_SC_des[which(SaRavsRapa_SC_des$log2FoldChange <= -1 
+                                              & SaRavsRapa_SC_des$padj <= 0.05), 7]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRavsRapa_SC_all_wo_GRG <- SaRavsRapa_SC_des[which((abs(SaRavsRapa_SC_des$log2FoldChange) >= 1 & SaRavsRapa_SC_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRavsRapa_SC_up_wo_GRG <- SaRavsRapa_SC_des[which((SaRavsRapa_SC_des$log2FoldChange >= 1 & SaRavsRapa_SC_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+
+GO_SaRavsRapa_SC_down_wo_GRG <- SaRavsRapa_SC_des[which((SaRavsRapa_SC_des$log2FoldChange <= -1 & SaRavsRapa_SC_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_SC_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), 7]
+#WRITE TABLE
+#Eg. write.table(GO_SaRavsRapa_SC_all, file = "COMPILED_DATA/GO_GENE_LISTS/GO_SaRavsRapa_SC_all.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+### SET DIFFERENCE ANALYSIS
+
+#### GENES SPECIFICALLY UPREGULATED IN SAPA MIXTURE
+
+```{r SET_DIFF1, message=FALSE}
+# [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
+Uniq_SaPa_up <- setdiff(intersect(GO_SaPavsPara_SC_up_wo_GRG, GO_SaPavsSalt_SC_up_wo_GRG),
+                     union(GO_para_SC_up_wo_GRG, GO_salt_SC_up_wo_GRG))
+length(Uniq_SaPa_up)
+#WRITE TABLE
+#write.table(Uniq_SaPa_up, file = "COMPILED_DATA/GO_GENE_LISTS/Uniq_SaPa_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Uniq_SaPa_SC_up_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Uniq_SaPa_up)), ]
+str(Uniq_SaPa_SC_up_des)
+Uniq_SaPa_SC_up_des <- cbind(Uniq_SaPa_SC_up_des, 
+                             salt_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)])
+#write.table(Uniq_SaPa_SC_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+
+```{r figure23, echo=FALSE, fig.cap="Figure 15: Venn diagram: Uniq_SaPa_up", fig.width=8, fig.height=8}
+Uniq_list_SaPa_up <- list(GO_SaPavsSalt_SC_up_wo_GRG,
+                          GO_salt_SC_up_wo_GRG, 
+                          GO_para_SC_up_wo_GRG, 
+                          GO_SaPavsPara_SC_up_wo_GRG)
+library(ggvenn)
+names(Uniq_list_SaPa_up) <- c("SP_S","S","P","SP_P")
+ggvenn(Uniq_list_SaPa_up, 
+  fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY UPREGULATED IN BOTH SAPA vs SALT and SAPA vs PARA COMPARISONS
+
+```{r SET_DIFF2, message=FALSE}
+# {(SaPa vs Salt) ∩ (SaPa vs Para)}
+Intersect_SaPa_up <- intersect(GO_SaPavsPara_SC_up_wo_GRG, GO_SaPavsSalt_SC_up_wo_GRG)
+length(Intersect_SaPa_up)
+#write.table(Intersect_SaPa_up, file = "COMPILED_DATA/GO_GENE_LISTS/Intersect_SaPa_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_SaPa_up_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_SaPa_up)), ]
+str(Intersect_SaPa_up_des)
+Intersect_SaPa_up_des <- cbind(Intersect_SaPa_up_des, 
+                             salt_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)])
+#write.table(Intersect_SaPa_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure24, echo=FALSE, fig.cap="Figure 16: Venn diagram: Intersect_SaPa_up", fig.width=8, fig.height=8}
+Intersect_list_SaPa_up <- list(GO_SaPavsSalt_SC_up_wo_GRG,
+                          GO_SaPavsPara_SC_up_wo_GRG)
+library(ggvenn)
+names(Intersect_list_SaPa_up) <- c("SP_S","SP_P")
+ggvenn(Intersect_list_SaPa_up, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY DOWNREGULATED IN SAPA MIXTURE
+
+```{r SET_DIFF3, message=FALSE}
+# [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
+Uniq_SaPa_down <- setdiff(intersect(GO_SaPavsPara_SC_down_wo_GRG, GO_SaPavsSalt_SC_down_wo_GRG),
+                     union(GO_para_SC_down_wo_GRG, GO_salt_SC_down_wo_GRG))
+length(Uniq_SaPa_down)
+#WRITE TABLE
+#write.table(Uniq_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS/Uniq_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Uniq_SaPa_SC_down_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Uniq_SaPa_down)), ]
+str(Uniq_SaPa_SC_down_des)
+Uniq_SaPa_SC_down_des <- cbind(Uniq_SaPa_SC_down_des, 
+                             salt_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)])
+#write.table(Uniq_SaPa_SC_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure25, echo=FALSE, fig.cap="Figure 17: Venn diagram: Uniq_SaPa_down", fig.width=8, fig.height=8}
+Uniq_list_SaPa_down <- list(GO_SaPavsSalt_SC_down_wo_GRG,
+                          GO_salt_SC_down_wo_GRG, 
+                          GO_para_SC_down_wo_GRG, 
+                          GO_SaPavsPara_SC_down_wo_GRG)
+library(ggvenn)
+names(Uniq_list_SaPa_down) <- c("SP_S","S","P","SP_P")
+ggvenn(Uniq_list_SaPa_down, 
+  fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY DOWNREGULATED IN BOTH SAPA vs SALT and SAPA vs PARA COMPARISONS
+
+```{r SET_DIFF4, message=FALSE}
+# {(SaPa vs Salt) ∩ (SaPa vs Para)}
+Intersect_SaPa_down <- intersect(GO_SaPavsPara_SC_down_wo_GRG, GO_SaPavsSalt_SC_down_wo_GRG)
+length(Intersect_SaPa_down)
+write.table(Intersect_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS/Intersect_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_SaPa_down_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_SaPa_down)), ]
+str(Intersect_SaPa_down_des)
+Intersect_SaPa_down_des <- cbind(Intersect_SaPa_down_des, 
+                             salt_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)])
+write.table(Intersect_SaPa_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure26, echo=FALSE, fig.cap="Figure 18: Venn diagram: Intersect_SaPa_down", fig.width=8, fig.height=8}
+Intersect_list_SaPa_down <- list(GO_SaPavsSalt_SC_down_wo_GRG,
+                          GO_SaPavsPara_SC_down_wo_GRG)
+library(ggvenn)
+names(Intersect_list_SaPa_down) <- c("SP_S","SP_P")
+ggvenn(Intersect_list_SaPa_down, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+
+
+```{r}
+#knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)
+```

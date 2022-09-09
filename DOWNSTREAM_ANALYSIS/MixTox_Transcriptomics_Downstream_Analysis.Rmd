@@ -1121,6 +1121,127 @@ GO_SaRavsRapa_SC_down_wo_GRG <- SaRavsRapa_SC_des[which((SaRavsRapa_SC_des$log2F
 
 ```
 
-```{r R_script}
-knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)
+### SET DIFFERENCE ANALYSIS
+
+#### GENES SPECIFICALLY UPREGULATED IN SAPA MIXTURE
+
+```{r SET_DIFF1, message=FALSE}
+# [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
+Uniq_SaPa_up <- setdiff(intersect(GO_SaPavsPara_SC_up_wo_GRG, GO_SaPavsSalt_SC_up_wo_GRG),
+                     union(GO_para_SC_up_wo_GRG, GO_salt_SC_up_wo_GRG))
+length(Uniq_SaPa_up)
+#WRITE TABLE
+#write.table(Uniq_SaPa_up, file = "COMPILED_DATA/GO_GENE_LISTS/Uniq_SaPa_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Uniq_SaPa_SC_up_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Uniq_SaPa_up)), ]
+str(Uniq_SaPa_SC_up_des)
+Uniq_SaPa_SC_up_des <- cbind(Uniq_SaPa_SC_up_des, 
+                             salt_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)])
+#write.table(Uniq_SaPa_SC_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+
+```{r figure23, echo=FALSE, fig.cap="Figure 15: Venn diagram: Uniq_SaPa_up", fig.width=8, fig.height=8}
+Uniq_list_SaPa_up <- list(GO_SaPavsSalt_SC_up_wo_GRG,
+                          GO_salt_SC_up_wo_GRG, 
+                          GO_para_SC_up_wo_GRG, 
+                          GO_SaPavsPara_SC_up_wo_GRG)
+library(ggvenn)
+names(Uniq_list_SaPa_up) <- c("SP_S","S","P","SP_P")
+ggvenn(Uniq_list_SaPa_up, 
+  fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY UPREGULATED IN BOTH SAPA vs SALT and SAPA vs PARA COMPARISONS
+
+```{r SET_DIFF2, message=FALSE}
+# {(SaPa vs Salt) ∩ (SaPa vs Para)}
+Intersect_SaPa_up <- intersect(GO_SaPavsPara_SC_up_wo_GRG, GO_SaPavsSalt_SC_up_wo_GRG)
+length(Intersect_SaPa_up)
+#write.table(Intersect_SaPa_up, file = "COMPILED_DATA/GO_GENE_LISTS/Intersect_SaPa_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_SaPa_up_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_SaPa_up)), ]
+str(Intersect_SaPa_up_des)
+Intersect_SaPa_up_des <- cbind(Intersect_SaPa_up_des, 
+                             salt_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_SaPa_up_des$SYS_ID), c(2,6)])
+#write.table(Intersect_SaPa_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure24, echo=FALSE, fig.cap="Figure 16: Venn diagram: Intersect_SaPa_up", fig.width=8, fig.height=8}
+Intersect_list_SaPa_up <- list(GO_SaPavsSalt_SC_up_wo_GRG,
+                          GO_SaPavsPara_SC_up_wo_GRG)
+library(ggvenn)
+names(Intersect_list_SaPa_up) <- c("SP_S","SP_P")
+ggvenn(Intersect_list_SaPa_up, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY DOWNREGULATED IN SAPA MIXTURE
+
+```{r SET_DIFF3, message=FALSE}
+# [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
+Uniq_SaPa_down <- setdiff(intersect(GO_SaPavsPara_SC_down_wo_GRG, GO_SaPavsSalt_SC_down_wo_GRG),
+                     union(GO_para_SC_down_wo_GRG, GO_salt_SC_down_wo_GRG))
+length(Uniq_SaPa_down)
+#WRITE TABLE
+#write.table(Uniq_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS/Uniq_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Uniq_SaPa_SC_down_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Uniq_SaPa_down)), ]
+str(Uniq_SaPa_SC_down_des)
+Uniq_SaPa_SC_down_des <- cbind(Uniq_SaPa_SC_down_des, 
+                             salt_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Uniq_SaPa_SC_down_des$SYS_ID), c(2,6)])
+#write.table(Uniq_SaPa_SC_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure25, echo=FALSE, fig.cap="Figure 17: Venn diagram: Uniq_SaPa_down", fig.width=8, fig.height=8}
+Uniq_list_SaPa_down <- list(GO_SaPavsSalt_SC_down_wo_GRG,
+                          GO_salt_SC_down_wo_GRG, 
+                          GO_para_SC_down_wo_GRG, 
+                          GO_SaPavsPara_SC_down_wo_GRG)
+library(ggvenn)
+names(Uniq_list_SaPa_down) <- c("SP_S","S","P","SP_P")
+ggvenn(Uniq_list_SaPa_down, 
+  fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+#### GENES SPECIFICALLY DOWNREGULATED IN BOTH SAPA vs SALT and SAPA vs PARA COMPARISONS
+
+```{r SET_DIFF4, message=FALSE}
+# {(SaPa vs Salt) ∩ (SaPa vs Para)}
+Intersect_SaPa_down <- intersect(GO_SaPavsPara_SC_down_wo_GRG, GO_SaPavsSalt_SC_down_wo_GRG)
+length(Intersect_SaPa_down)
+write.table(Intersect_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS/Intersect_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_SaPa_down_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_SaPa_down)), ]
+str(Intersect_SaPa_down_des)
+Intersect_SaPa_down_des <- cbind(Intersect_SaPa_down_des, 
+                             salt_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)])
+write.table(Intersect_SaPa_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure26, echo=FALSE, fig.cap="Figure 18: Venn diagram: Intersect_SaPa_down", fig.width=8, fig.height=8}
+Intersect_list_SaPa_down <- list(GO_SaPavsSalt_SC_down_wo_GRG,
+                          GO_SaPavsPara_SC_down_wo_GRG)
+library(ggvenn)
+names(Intersect_list_SaPa_down) <- c("SP_S","SP_P")
+ggvenn(Intersect_list_SaPa_down, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+
+
+```{r}
+#knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)
 ```
