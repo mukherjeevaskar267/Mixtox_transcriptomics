@@ -1240,7 +1240,50 @@ ggvenn(Intersect_list_SaPa_down,
   set_name_size = 4)
 ```
 
+### GO_ANALYSIS FOR S. CEREVISIAE
 
+```{r}
+
+library(org.Sc.sgd.db)
+library(clusterProfiler)
+library(AnnotationDbi)
+
+go_enrichment <- function(input_file, background_file, p_value_threshold = 0.05){
+
+input_genes <- read.table(file = input_file, 
+                          header = F, 
+                          stringsAsFactors = F)
+
+input_genename <- bitr(input_genes[,1], fromType="SGD", toType="GENENAME", OrgDb="org.Sc.sgd.db")
+
+background_genes_all <- read.table(file = background_file, 
+                                   header = F, 
+                                   stringsAsFactors = F)
+
+background_genename_all <- bitr(background_genes_all[,1], fromType="SGD", toType="GENENAME", OrgDb="org.Sc.sgd.db")
+
+Go_output_BP <- enrichGO(gene = input_genename[,2], OrgDb = org.Sc.sgd.db, keyType = "GENENAME", ont = "BP", pvalueCutoff = p_value_threshold, universe = background_genename_all[,2])
+Go_output_MF <- enrichGO(gene = input_genename[,2], OrgDb = org.Sc.sgd.db, keyType = "GENENAME", ont = "MF", pvalueCutoff = p_value_threshold, universe = background_genename_all[,2])
+Go_output_CC <- enrichGO(gene = input_genename[,2], OrgDb = org.Sc.sgd.db, keyType = "GENENAME", ont = "CC", pvalueCutoff = p_value_threshold, universe = background_genename_all[,2])
+
+df = data.frame(matrix(nrow = 1, ncol = 9)) 
+colnames(df) <- c("ID", "Description", "GeneRatio",	"BgRatio",	"pvalue",	"p.adjust",	"qvalue",	"geneID",	"Count")
+
+go_terms <- rbind(as.data.frame(Go_output_BP), df, as.data.frame(Go_output_MF), df, as.data.frame(Go_output_CC))
+output_file <- paste0("COMPILED_DATA/GO_OUTPUT/GO_output_wo_GRG/", gsub(".txt", "_output.csv", basename(input_file)))
+write.table(go_terms, file = output_file, sep = ",", row.names = F, col.names = T)
+}
+
+input_files <- list.files(path = "COMPILED_DATA/GO_GENE_LISTS/GO_Input_wo_GRG/", pattern = ".txt", full.names = TRUE)
+
+#for (file in input_files) {
+#go_enrichment(input_file = file, 
+#                background_file = "COMPILED_DATA/GO_GENE_LISTS/BACKGROUND_GENESET_SGD_DB_ID.txt",
+#                p_value_threshold = 0.1)
+#}
+
+
+```
 
 ```{r}
 #knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)

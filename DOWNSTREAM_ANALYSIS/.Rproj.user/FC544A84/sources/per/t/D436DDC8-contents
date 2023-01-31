@@ -1240,7 +1240,210 @@ ggvenn(Intersect_list_SaPa_down,
   set_name_size = 4)
 ```
 
+```{r}
+library(GOstats)
+library(org.Hs.eg.db)
 
+# function to perform GO enrichment analysis
+go_enrichment <- function(input_file, background_file, pvalue_threshold) {
+  
+  # read input file with gene identifiers
+  genes <- read.table(input_file, header = FALSE)
+  
+  # read background file with gene identifiers
+  background <- read.table(background_file, header = FALSE)
+  
+  # convert gene identifiers to Entrez IDs
+  genes_entrez <- mapIds(org.Hs.egSYMBOL, keys=genes$V1, keytype="SYMBOL", column="ENTREZID")
+  background_entrez <- mapIds(org.Hs.egSYMBOL, keys=background$V1, keytype="SYMBOL", column="ENTREZID")
+  
+  # perform GO enrichment analysis
+  go_results <- goHyperGTest(genes_entrez, background=background_entrez, universe=keys(org.Hs.egSYMBOL), ont="BP", pvalueCutoff=pvalue_threshold)
+  
+  # write results to output file
+  write.table(go_results, file = "go_enrichment_output.txt", sep = "\t", row.names = FALSE, col.names = TRUE)
+}
+
+# example usage
+go_enrichment("input_genes.txt", "background_genes.txt", 0.05)
+
+# ALTERNATIVE
+library(topGO)
+library(annotate)
+
+# function to perform GO enrichment analysis
+go_enrichment <- function(input_file, background_file, pvalue_threshold) {
+  
+  # read input file with gene identifiers
+  genes <- read.table(input_file, header = FALSE)
+  
+  # read background file with gene identifiers
+  background <- read.table(background_file, header = FALSE)
+  
+  # convert gene identifiers to SGD IDs
+  genes_sgd <- mapIds(org.Sc.sgd, keys=genes$V1, keytype="GENENAME", column="SGDID")
+  background_sgd <- mapIds(org.Sc.sgd, keys=background$V1, keytype="GENENAME", column="SGDID")
+  
+  # perform GO enrichment analysis
+  allGenes <- c(genes_sgd, background_sgd)
+  names(allGenes) <- mapIds(org.Sc.sgd, keys=allGenes, keytype="SGDID", column="GENENAME")
+  go_data <- new("topGOdata", description = "yeast data", ontology = "BP", allGenes = allGenes, annot = annFUN.org)
+  
+  # score(statistic) function 
+  score(go_data) <- function(geneList, allGenes) {
+    score <- hyperGTest(geneList, allGenes, background_sgd)
+    return(score)
+  }
+
+  result_table <- runTest(go_data, algorithm = "classic", statistic = "score")
+  result_table <- GenTable(go_data, classicFisher = TRUE, pvalueCutoff = pvalue_threshold)
+
+  # write results to output file
+  write.csv(result_table, file = "go_enrichment_output.csv", row.names = TRUE)
+}
+
+# example usage
+go_enrichment("input_genes.txt", "background_genes.txt", 0.05)
+
+#ALTERNATIVE 2
+#This code will take as input a folder containing .txt files with SGD #gene identifiers, a background list of gene
+
+library(topGO)
+library(annotate)
+library(dplyr)
+library(AnnotationDbi)
+
+# function to perform GO enrichment analysis
+go_enrichment <- function(input_file, background_file, pvalue_threshold) {
+  
+  # read input file with gene identifiers
+  genes <- read.table(input_file, header = FALSE)
+  
+  # read background file with gene identifiers
+  if(!is.null(background_file)) {
+    background <- read.table(background_file, header = FALSE)
+    background_sgd <- mapIds(org.Sc.sgd, keys=background$V1, keytype="GENENAME", column="SGDID")
+  } else {
+    background_sgd <- keys(org.Sc.sgd)
+  }
+  
+  # convert gene identifiers to SGD IDs
+  genes_sgd <- mapIds(org.Sc.sgd, keys=genes$V1, keytype="GENENAME", column="SGDID")
+  background_sgd <- mapIds(org.Sc.sgd, keys=background$V1, keytype="GENENAME", column="SGDID")
+  
+  # perform GO enrichment analysis
+  allGenes <- c(genes_sgd, background_sgd)
+  names(allGenes) <- mapIds(org.Sc.sgd, keys=allGenes, keytype="SGDID", column="GENENAME")
+  go_data <- new("topGOdata", description = "yeast data", ontology = "BP", allGenes = allGenes, annot = annFUN.org)
+  
+  # score(statistic) function 
+  score(go_data) <- function(geneList, allGenes) {
+    score <- hyperGTest(geneList, allGenes, background_sgd)
+    return(score)
+  }
+
+  result_table_BP <- runTest(go_data, algorithm = "classic", statistic = "score")
+  result_table_BP <- GenTable(go_data, classicFisher = TRUE, pvalueCutoff = pvalue_threshold)
+  
+  # Repeat the analysis for different ontologies
+  go_data$ontology <- "MF"
+  result_table_MF <- runTest(go_data, algorithm = "classic", statistic = "score")
+  result_table_MF <- GenTable(go_data, classicFisher = TRUE, pvalueCutoff = pvalue_threshold)
+  
+  go_data$ontology <- "CC"
+  result_table_CC <- runTest(go_data, algorithm = "classic", statistic = "score")
+  result_table_CC <- GenTable(go_data, classicFisher = TRUE, pvalueCutoff = pvalue_threshold)
+  
+  # Bind the results
+  result_table <- bind_rows(result_table_BP, result_table_MF, result_table_CC)
+  
+  # write results to output file
+  output_file = gsub("input_file", "COMPILED_DATA/GO_OUTPUT", "output_", input_file)
+  write.csv(result_table, file = output_file, row.names = TRUE)
+}
+
+# example usage
+file_list <- list.files(path = "COMPILED_DATA/GO_GENE_LISTS/GO_Input/", pattern = "*.txt", full.names = TRUE)
+
+for (file in file_list) {
+  go_enrichment(file, "COMPILED_DATA/GO_GENE_LISTS/Background_all.txt", 0.1)
+}
+
+#ALTERNATIVE 3
+library(AnnotationDbi)
+library(org.Sc.sgd.db)
+library(GO.db)
+
+# function to perform GO enrichment analysis
+go_enrichment <- function(input_file, background_file = NULL, p_value_threshold = 0.05) {
+  # read background file if provided, otherwise use all annotated S. cerevisiae genes
+  if (!is.null(background_file)) {
+    background_genes <-scan(background_file,
+                            quiet=TRUE,
+                            what="")
+  } else {
+    background_genes <- keys(org.Sc.sgd.db, keytype = "SGD")
+  }
+
+# load gene selection
+selection<-scan(input_file,
+                quiet=TRUE,
+                what="")
+  
+  # read input file
+  input_genes <- read.table(input_file, header = F, stringsAsFactors = F)
+  input_genes <- input_genes[,1]
+  
+  # read background file if provided, otherwise use all annotated S. cerevisiae genes
+  if (!is.null(background_file)) {
+    background_genes <- read.table(background_file, header = F, stringsAsFactors = F)
+    background_genes <- background_genes[,1]
+  } else {
+    background_genes <- keys(org.Sc.sgd.db, keytype = "SGD")
+  }
+  
+  # map gene identifiers to common gene symbols
+  input_genes <- select(org.Sc.sgd.db, keys=input_genes, keytype="SGD", columns="GENENAME")
+  background_genes <- select(org.Sc.sgd.db, keys = background_genes, keytype = "SGD", column = "GENENAME")
+  
+  # perform GO enrichment analysis for process, function and component
+  
+  
+  GOdata <- new("topGOdata", description="Test", ontology="BP", allGenes=input_genes, geneSel=data$GO, nodeSize=5)
+  sampleGOdata <- new("topGOdata", 
+                    description = "test", 
+                    ontology = "BP",
+                    allGenes = input_genes, 
+                    geneSel=input_genes$GO,
+                    nodeSize = 10,
+                    annot = org.Sc.sgd.db)
+  
+  go_terms_bp <- goa::goa_bp(input_genes, background_genes, ont = "BP", pvalueCutoff = p_value_threshold)
+  go_terms_mf <- goa::goa_mf(input_genes, background_genes, ont = "MF", pvalueCutoff = p_value_threshold)
+  go_terms_cc <- goa::goa_cc(input_genes, background_genes, ont = "CC", pvalueCutoff = p_value_threshold)
+  
+  # combine results and write to output file
+  go_terms <- rbind(go_terms_bp, go_terms_mf, go_terms_cc)
+  output_file <- paste0("COMPILED_DATA/GO_OUTPUT/", gsub(".txt", "_output.csv", basename(input_file)))
+  write.table(go_terms, file = output_file, sep = ",", row.names = F, col.names = T)
+}
+
+# read all text files in directory
+input_files <- list.files(path = "COMPILED_DATA/GO_GENE_LISTS/GO_Input/", pattern = ".txt", full.names = TRUE)
+
+# perform GO enrichment analysis for each file
+for (file in input_files) {
+  go_enrichment(file, p_value_threshold = 0.1)
+}
+
+#this code assumes that you have the org.Sc.sgd.db and GO.db packages installed and loaded.
+#You may need to change the package name, such as goa to GSEABase, or other package according to your R version and setup.
+#The input file in txt format, containing SGD gene identifiers with one gene per line.
+#The background_file is an optional argument, it's format and content should be the same as the input file. 
+#The p_value_threshold is an optional argument, default value is 0.05.
+#The output files will be stored in a folder called GO_OUTPUT and will have the same name as the input file with output_ in the name
+
+```
 
 ```{r}
 #knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)
