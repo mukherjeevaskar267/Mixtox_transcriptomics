@@ -856,10 +856,6 @@ arrows(test_sc_p$GR_Mean - test_sc_p$GR_SD,
 
 ```
 
-### GROWTH RATE VS EXPRESSION SCATTER PLOT D. HANSENII
-
-To Do
-
 
 ## GO ENRICHMENT ANALYSIS
 
@@ -965,7 +961,7 @@ GO_salt2_DH_down_wo_GRG <- salt2_DH_des[which((salt2_DH_des$log2FoldChange <= -1
                                                      & !(salt2_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
 
 #WRITE TABLE
-write.table(GO_salt2_DH_down, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/GO_salt2_DH_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+#write.table(GO_salt2_DH_down, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/GO_salt2_DH_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 
 ```
@@ -998,7 +994,7 @@ GO_para_SC_down_wo_GRG <- para_SC_des[which((para_SC_des$log2FoldChange <= -1 & 
 
 #### PARA (500 ug/ml) vs CTRL (DH)
 
-```{r GO_analysis4}
+```{r GO_analysis5}
 # WITH GROWTH RELATED GENES
 
 GO_para_DH_all <- para_DH_des[which(abs(para_DH_des$log2FoldChange) >= 1 
@@ -1018,14 +1014,14 @@ GO_para_DH_up_wo_GRG <- para_DH_des[which((para_DH_des$log2FoldChange >= 1 & par
 GO_para_DH_down_wo_GRG <- para_DH_des[which((para_DH_des$log2FoldChange <= -1 & para_DH_des$padj <= 0.05)
                                                      & !(para_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
 #WRITE TABLE
-write.table(GO_para_DH_up, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/GO_para_DH_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+#write.table(GO_para_DH_up, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/GO_para_DH_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 ```
 
 
 #### RAPA (1 ug/ml) vs CTRL (SC)
 
-```{r GO_analysis3}
+```{r GO_analysis6}
 # WITH GROWTH RELATED GENES
 
 GO_rapa_SC_all <- rapa_SC_des[which(abs(rapa_SC_des$log2FoldChange) >= 1 
@@ -1049,9 +1045,37 @@ GO_rapa_SC_down_wo_GRG <- rapa_SC_des[which((rapa_SC_des$log2FoldChange <= -1 & 
 
 ```
 
+
+#### RAPA (1 ug/ml) vs CTRL (DH)
+
+```{r GO_analysis7}
+
+# WITH GROWTH RELATED GENES
+GO_rapa_DH_all <- rapa_DH_des[which(abs(rapa_DH_des$log2FoldChange) >= 1 
+                                              & rapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_rapa_DH_up <- rapa_DH_des[which(rapa_DH_des$log2FoldChange>= 1 
+                                              & rapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_rapa_DH_down <- rapa_DH_des[which(rapa_DH_des$log2FoldChange <= -1 
+                                              & rapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_rapa_DH_all_wo_GRG <- rapa_DH_des[which((abs(rapa_DH_des$log2FoldChange) >= 1 & rapa_DH_des$padj <= 0.05)
+                                                     & !(rapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_rapa_DH_up_wo_GRG <- rapa_DH_des[which((rapa_DH_des$log2FoldChange >= 1 & rapa_DH_des$padj <= 0.05)
+                                                     & !(rapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_rapa_DH_down_wo_GRG <- rapa_DH_des[which((rapa_DH_des$log2FoldChange <= -1 & rapa_DH_des$padj <= 0.05)
+                                                     & !(rapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+#write.table(GO_rapa_DH_down_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_rapa_DH_down_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+
 #### SAPA (600 mM salt and 1000 ug/ml paraquat) vs CTRL (SC)
 
-```{r GO_analysis4}
+```{r GO_analysis8}
 # WITH GROWTH RELATED GENES
 
 GO_SaPa_SC_all <- SaPa_SC_des[which(abs(SaPa_SC_des$log2FoldChange) >= 1 
@@ -1075,9 +1099,36 @@ GO_SaPa_SC_down_wo_GRG <- SaPa_SC_des[which((SaPa_SC_des$log2FoldChange <= -1 & 
 
 ```
 
+#### SAPA (650 mM salt and 500 ug/ml paraquat) vs CTRL (DH)
+
+```{r GO_analysis9}
+
+# WITH GROWTH RELATED GENES
+
+GO_SaPa_DH_all <- SaPa_DH_des[which(abs(SaPa_DH_des$log2FoldChange) >= 1 
+                                              & SaPa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPa_DH_up <- SaPa_DH_des[which(SaPa_DH_des$log2FoldChange>= 1 
+                                              & SaPa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPa_DH_down <- SaPa_DH_des[which(SaPa_DH_des$log2FoldChange <= -1 
+                                              & SaPa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPa_DH_all_wo_GRG <- SaPa_DH_des[which((abs(SaPa_DH_des$log2FoldChange) >= 1 & SaPa_DH_des$padj <= 0.05)
+                                                     & !(SaPa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPa_DH_up_wo_GRG <- SaPa_DH_des[which((SaPa_DH_des$log2FoldChange >= 1 & SaPa_DH_des$padj <= 0.05)
+                                                     & !(SaPa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPa_DH_down_wo_GRG <- SaPa_DH_des[which((SaPa_DH_des$log2FoldChange <= -1 & SaPa_DH_des$padj <= 0.05)
+                                                     & !(SaPa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+#write.table(GO_SaPa_DH_down, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/GO_SaPa_DH_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
 #### SARA (600 mM salt and 1 ug/ml rapamycin) vs CTRL (SC)
 
-```{r GO_analysis5}
+```{r GO_analysis10}
 # WITH GROWTH RELATED GENES
 
 GO_SaRa_SC_all <- SaRa_SC_des[which(abs(SaRa_SC_des$log2FoldChange) >= 1 
@@ -1101,11 +1152,38 @@ GO_SaRa_SC_down_wo_GRG <- SaRa_SC_des[which((SaRa_SC_des$log2FoldChange <= -1 & 
 
 ```
 
+#### SARA (1200 mM salt and 1 ug/ml rapamycin) vs CTRL (DH)
+
+```{r GO_analysis11}
+
+# WITH GROWTH RELATED GENES
+
+GO_SaRa_DH_all <- SaRa_DH_des[which(abs(SaRa_DH_des$log2FoldChange) >= 1 
+                                              & SaRa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRa_DH_up <- SaRa_DH_des[which(SaRa_DH_des$log2FoldChange>= 1 
+                                              & SaRa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRa_DH_down <- SaRa_DH_des[which(SaRa_DH_des$log2FoldChange <= -1 
+                                              & SaRa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRa_DH_all_wo_GRG <- SaRa_DH_des[which((abs(SaRa_DH_des$log2FoldChange) >= 1 & SaRa_DH_des$padj <= 0.05)
+                                                     & !(SaRa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRa_DH_up_wo_GRG <- SaRa_DH_des[which((SaRa_DH_des$log2FoldChange >= 1 & SaRa_DH_des$padj <= 0.05)
+                                                     & !(SaRa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRa_DH_down_wo_GRG <- SaRa_DH_des[which((SaRa_DH_des$log2FoldChange <= -1 & SaRa_DH_des$padj <= 0.05)
+                                                     & !(SaRa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+write.table(GO_SaRa_DH_all_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_SaRa_DH_all_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
 ### MIXTURE vs SINGLE COMPOUND
 
 #### SAPA (600 mM salt and 1000 ug/ml paraquat) vs SALT (600 mM) (SC)
 
-```{r GO_analysis6}
+```{r GO_analysis12}
 # WITH GROWTH RELATED GENES
 
 GO_SaPavsSalt_SC_all <- SaPavsSalt_SC_des[which(abs(SaPavsSalt_SC_des$log2FoldChange) >= 1 
@@ -1129,9 +1207,35 @@ GO_SaPavsSalt_SC_down_wo_GRG <- SaPavsSalt_SC_des[which((SaPavsSalt_SC_des$log2F
 
 ```
 
+#### SAPA (650 mM salt and 500 ug/ml paraquat) vs SALT (650 mM) (DH)
+
+```{r GO_analysis13}
+# WITH GROWTH RELATED GENES
+
+GO_SaPavsSalt1_DH_all <- SaPavsSalt1_DH_des[which(abs(SaPavsSalt1_DH_des$log2FoldChange) >= 1 
+                                              & SaPavsSalt1_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPavsSalt1_DH_up <- SaPavsSalt1_DH_des[which(SaPavsSalt1_DH_des$log2FoldChange>= 1 
+                                              & SaPavsSalt1_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPavsSalt1_DH_down <- SaPavsSalt1_DH_des[which(SaPavsSalt1_DH_des$log2FoldChange <= -1 
+                                              & SaPavsSalt1_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPavsSalt1_DH_all_wo_GRG <- SaPavsSalt1_DH_des[which((abs(SaPavsSalt1_DH_des$log2FoldChange) >= 1 & SaPavsSalt1_DH_des$padj <= 0.05)
+                                                     & !(SaPavsSalt1_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPavsSalt1_DH_up_wo_GRG <- SaPavsSalt1_DH_des[which((SaPavsSalt1_DH_des$log2FoldChange >= 1 & SaPavsSalt1_DH_des$padj <= 0.05)
+                                                     & !(SaPavsSalt1_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPavsSalt1_DH_down_wo_GRG <- SaPavsSalt1_DH_des[which((SaPavsSalt1_DH_des$log2FoldChange <= -1 & SaPavsSalt1_DH_des$padj <= 0.05)
+                                                     & !(SaPavsSalt1_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+#write.table(GO_SaPavsSalt1_DH_all_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_SaPavsSalt1_DH_all_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
 #### SAPA (600 mM salt and 1000 ug/ml paraquat) vs PARA (1000 ug/ml paraquat) (SC)
 
-```{r GO_analysis7}
+```{r GO_analysis14}
 # WITH GROWTH RELATED GENES
 
 GO_SaPavsPara_SC_all <- SaPavsPara_SC_des[which(abs(SaPavsPara_SC_des$log2FoldChange) >= 1 
@@ -1155,10 +1259,35 @@ GO_SaPavsPara_SC_down_wo_GRG <- SaPavsPara_SC_des[which((SaPavsPara_SC_des$log2F
 
 ```
 
+#### SAPA (650 mM salt and 500 ug/ml paraquat) vs PARA (500 ug/ml paraquat) (DH)
+
+```{r GO_analysis15}
+# WITH GROWTH RELATED GENES
+
+GO_SaPavsPara_DH_all <- SaPavsPara_DH_des[which(abs(SaPavsPara_DH_des$log2FoldChange) >= 1 
+                                              & SaPavsPara_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPavsPara_DH_up <- SaPavsPara_DH_des[which(SaPavsPara_DH_des$log2FoldChange>= 1 
+                                              & SaPavsPara_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaPavsPara_DH_down <- SaPavsPara_DH_des[which(SaPavsPara_DH_des$log2FoldChange <= -1 
+                                              & SaPavsPara_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaPavsPara_DH_all_wo_GRG <- SaPavsPara_DH_des[which((abs(SaPavsPara_DH_des$log2FoldChange) >= 1 & SaPavsPara_DH_des$padj <= 0.05)
+                                                     & !(SaPavsPara_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPavsPara_DH_up_wo_GRG <- SaPavsPara_DH_des[which((SaPavsPara_DH_des$log2FoldChange >= 1 & SaPavsPara_DH_des$padj <= 0.05)
+                                                     & !(SaPavsPara_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaPavsPara_DH_down_wo_GRG <- SaPavsPara_DH_des[which((SaPavsPara_DH_des$log2FoldChange <= -1 & SaPavsPara_DH_des$padj <= 0.05)
+                                                     & !(SaPavsPara_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+#write.table(GO_SaPavsPara_DH_all_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_SaPavsPara_DH_all_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
 
 #### SARA (600 mM salt and 1 ug/ml rapamycin) vs SALT (600 mM) (SC)
 
-```{r GO_analysis8}
+```{r GO_analysis16}
 # WITH GROWTH RELATED GENES
 
 GO_SaRavsSalt_SC_all <- SaRavsSalt_SC_des[which(abs(SaRavsSalt_SC_des$log2FoldChange) >= 1 
@@ -1182,10 +1311,35 @@ GO_SaRavsSalt_SC_down_wo_GRG <- SaRavsSalt_SC_des[which((SaRavsSalt_SC_des$log2F
 
 ```
 
+#### SARA (1200 mM salt and 1 ug/ml rapamycin) vs SALT (1200 mM) (DH)
+
+```{r GO_analysis17}
+# WITH GROWTH RELATED GENES
+
+GO_SaRavsSalt2_DH_all <- SaRavsSalt2_DH_des[which(abs(SaRavsSalt2_DH_des$log2FoldChange) >= 1 
+                                              & SaRavsSalt2_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRavsSalt2_DH_up <- SaRavsSalt2_DH_des[which(SaRavsSalt2_DH_des$log2FoldChange>= 1 
+                                              & SaRavsSalt2_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRavsSalt2_DH_down <- SaRavsSalt2_DH_des[which(SaRavsSalt2_DH_des$log2FoldChange <= -1 
+                                              & SaRavsSalt2_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRavsSalt2_DH_all_wo_GRG <- SaRavsSalt2_DH_des[which((abs(SaRavsSalt2_DH_des$log2FoldChange) >= 1 & SaRavsSalt2_DH_des$padj <= 0.05)
+                                                     & !(SaRavsSalt2_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRavsSalt2_DH_up_wo_GRG <- SaRavsSalt2_DH_des[which((SaRavsSalt2_DH_des$log2FoldChange >= 1 & SaRavsSalt2_DH_des$padj <= 0.05)
+                                                     & !(SaRavsSalt2_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRavsSalt2_DH_down_wo_GRG <- SaRavsSalt2_DH_des[which((SaRavsSalt2_DH_des$log2FoldChange <= -1 & SaRavsSalt2_DH_des$padj <= 0.05)
+                                                     & !(SaRavsSalt2_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+#write.table(GO_SaRavsSalt2_DH_all_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_SaRavsSalt2_DH_all_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
 
 #### SARA (600 mM salt and 1 ug/ml rapamycin) vs RAPAMYCIN (1 ug/ml rapamycin) (SC)
 
-```{r GO_analysis9}
+```{r GO_analysis18}
 # WITH GROWTH RELATED GENES
 
 GO_SaRavsRapa_SC_all <- SaRavsRapa_SC_des[which(abs(SaRavsRapa_SC_des$log2FoldChange) >= 1 
@@ -1209,9 +1363,35 @@ GO_SaRavsRapa_SC_down_wo_GRG <- SaRavsRapa_SC_des[which((SaRavsRapa_SC_des$log2F
 
 ```
 
+#### SARA (1200 mM salt and 1 ug/ml rapamycin) vs RAPAMYCIN (1 ug/ml rapamycin) (DH)
+
+```{r GO_analysis19}
+# WITH GROWTH RELATED GENES
+
+GO_SaRavsRapa_DH_all <- SaRavsRapa_DH_des[which(abs(SaRavsRapa_DH_des$log2FoldChange) >= 1 
+                                              & SaRavsRapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRavsRapa_DH_up <- SaRavsRapa_DH_des[which(SaRavsRapa_DH_des$log2FoldChange>= 1 
+                                              & SaRavsRapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+GO_SaRavsRapa_DH_down <- SaRavsRapa_DH_des[which(SaRavsRapa_DH_des$log2FoldChange <= -1 
+                                              & SaRavsRapa_DH_des$padj <= 0.05), "SGD_DB_ID"]
+# WITHOUT GROWTH RELATED GENES
+
+GO_SaRavsRapa_DH_all_wo_GRG <- SaRavsRapa_DH_des[which((abs(SaRavsRapa_DH_des$log2FoldChange) >= 1 & SaRavsRapa_DH_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRavsRapa_DH_up_wo_GRG <- SaRavsRapa_DH_des[which((SaRavsRapa_DH_des$log2FoldChange >= 1 & SaRavsRapa_DH_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+
+GO_SaRavsRapa_DH_down_wo_GRG <- SaRavsRapa_DH_des[which((SaRavsRapa_DH_des$log2FoldChange <= -1 & SaRavsRapa_DH_des$padj <= 0.05)
+                                                     & !(SaRavsRapa_DH_des$SGD_DB_ID %in% GRG_ALL_SGD_DB_ID)), "SGD_DB_ID"]
+#WRITE TABLE
+write.table(GO_SaRavsRapa_DH_all_wo_GRG, file = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG/GO_SaRavsRapa_DH_all_wo_GRG.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
 ### SET DIFFERENCE ANALYSIS
 
-#### GENES SPECIFICALLY UPREGULATED IN SAPA MIXTURE
+#### GENES SPECIFICALLY UPREGULATED IN SAPA MIXTURE (SC)
 
 ```{r SET_DIFF1, message=FALSE}
 # [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
@@ -1229,6 +1409,23 @@ Uniq_SaPa_SC_up_des <- cbind(Uniq_SaPa_SC_up_des,
 #write.table(Uniq_SaPa_SC_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
 ```
 
+#### GENES SPECIFICALLY UPREGULATED IN SAPA MIXTURE (DH)
+
+```{r SET_DIFF2, message=FALSE}
+# [{(SaPa vs Salt) ∩ (SaPa vs Para)} \ {(Salt vs Ctrl) U (Para vs Ctrl)}]
+Uniq_SaPa_up_DH <- setdiff(intersect(GO_SaPavsPara_DH_up_wo_GRG, GO_SaPavsSalt1_DH_up_wo_GRG),
+                     union(GO_para_DH_up_wo_GRG, GO_salt1_DH_up_wo_GRG))
+length(Uniq_SaPa_up_DH)
+#WRITE TABLE
+#write.table(Uniq_SaPa_up, file = "COMPILED_DATA/GO_GENE_LISTS_SC/Uniq_SaPa_up.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Uniq_SaPa_SC_up_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Uniq_SaPa_up)), ]
+str(Uniq_SaPa_SC_up_des)
+Uniq_SaPa_SC_up_des <- cbind(Uniq_SaPa_SC_up_des, 
+                             salt_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             para_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Uniq_SaPa_SC_up_des$SYS_ID), c(2,6)])
+#write.table(Uniq_SaPa_SC_up_des, file = "COMPILED_DATA/SET_DIFFERENCE/Uniq_SaPa_SC_up_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
 
 ```{r figure23, echo=FALSE, fig.cap="Figure 15: Venn diagram: Uniq_SaPa_up", fig.width=8, fig.height=8}
 Uniq_list_SaPa_up <- list(GO_SaPavsSalt_SC_up_wo_GRG,
@@ -1307,14 +1504,14 @@ ggvenn(Uniq_list_SaPa_down,
 # {(SaPa vs Salt) ∩ (SaPa vs Para)}
 Intersect_SaPa_down <- intersect(GO_SaPavsPara_SC_down_wo_GRG, GO_SaPavsSalt_SC_down_wo_GRG)
 length(Intersect_SaPa_down)
-write.table(Intersect_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS_SC/Intersect_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+#write.table(Intersect_SaPa_down, file = "COMPILED_DATA/GO_GENE_LISTS_SC/Intersect_SaPa_down.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
 Intersect_SaPa_down_des <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_SaPa_down)), ]
 str(Intersect_SaPa_down_des)
 Intersect_SaPa_down_des <- cbind(Intersect_SaPa_down_des, 
                              salt_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
                              para_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)],
                              SaPa_SC[as.character(Intersect_SaPa_down_des$SYS_ID), c(2,6)])
-write.table(Intersect_SaPa_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+#write.table(Intersect_SaPa_down_des, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_SaPa_down_des.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
 ```
 
 ```{r figure26, echo=FALSE, fig.cap="Figure 18: Venn diagram: Intersect_SaPa_down", fig.width=8, fig.height=8}
@@ -1412,7 +1609,7 @@ input_files <- list.files(path = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input/", pat
 # RUN THE PART BELOW ONLY WHEN YOU NEED TO REGENERATE THE OUTPUT FILES #
 ########################################################################
 
-for (file in input_files) {go_enrichment(input_file = file, background_file = "COMPILED_DATA/GO_GENE_LISTS_SC/BACKGROUND_GENESET_SGD_DB_ID.txt", p_value_threshold = 0.1)}
+for (file in input_files) {go_enrichment(input_file = file, background_file = "COMPILED_DATA/GO_GENE_LISTS_SC/Background_all.txt", p_value_threshold = 0.1)}
 ```
 
 ```{r}
