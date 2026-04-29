@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, dev = "png", dpi = 300)
 ```
 
 # TRANSCRIPTOMIC ANALYSIS
@@ -1861,6 +1861,65 @@ ggvenn(Intersect_list_SaRa_down_DH,
   set_name_size = 4)
 ```
 
+#### RESCUE / REVERSAL GENES IN FOR THE ANTAGONISTIC SALT + PARAQUAT CASE (SC)
+
+These may explain antagonism better, because salt may suppress harmful paraquat-induced oxidative-stress programs or restore processes inhibited by paraquat.
+
+##### GENE EXPRESSION INDUCED BY PARAQUAT (SINGLE) BUT REVERSED BY SALT IN MIXTURE
+
+```{r SET_DIFF17, message=FALSE}
+# {(Para vs Crtl) ∩ (SaPa vs Para)}
+Intersect_Para_up_recued_by_salt_SC <- intersect(GO_para_SC_up_wo_GRG, GO_SaPavsPara_SC_down_wo_GRG)
+length(Intersect_Para_up_recued_by_salt_SC)
+#write.table(Intersect_Para_up_recued_by_salt_SC, file = "COMPILED_DATA/GO_GENE_LISTS_SC/GO_Input_wo_GRG/Intersect_Para_up_recued_by_salt_SC.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_Para_up_recued_by_salt_des_SC <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_Para_up_recued_by_salt_SC)), ]
+str(Intersect_Para_up_recued_by_salt_des_SC)
+Intersect_Para_up_recued_by_salt_des_SC <- cbind(Intersect_Para_up_recued_by_salt_des_SC, 
+                             salt_SC[as.character(Intersect_Para_up_recued_by_salt_des_SC$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_Para_up_recued_by_salt_des_SC$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_Para_up_recued_by_salt_des_SC$SYS_ID), c(2,6)])
+#write.table(Intersect_Para_up_recued_by_salt_des_SC, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_Para_up_recued_by_salt_des_SC.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure39, echo=FALSE, fig.cap="Figure 31: Venn diagram: Intersect_SaPa_up", fig.width=8, fig.height=8}
+Intersect_list_Para_up_recued_by_salt_des_SC <- list(GO_para_SC_up_wo_GRG,
+                          GO_SaPavsPara_SC_down_wo_GRG)
+library(ggvenn)
+names(Intersect_list_Para_up_recued_by_salt_des_SC) <- c("P","SP_P")
+ggvenn(Intersect_list_Para_up_recued_by_salt_des_SC, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
+##### GENE EXPRESSION SUPRRESED BY PARAQUAT (SINGLE) BUT REVERSED BY SALT IN MIXTURE
+
+```{r SET_DIFF18, message=FALSE}
+# {(Para vs Crtl) ∩ (SaPa vs Para)}
+Intersect_Para_down_recued_by_salt_SC <- intersect(GO_para_SC_down_wo_GRG, GO_SaPavsPara_SC_up_wo_GRG)
+length(Intersect_Para_down_recued_by_salt_SC)
+#write.table(Intersect_Para_down_recued_by_salt_SC, file = "COMPILED_DATA/GO_GENE_LISTS_SC/GO_Input_wo_GRG/Intersect_Para_down_recued_by_salt_SC.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = FALSE, quote = FALSE)
+Intersect_Para_down_recued_by_salt_des_SC <- Gene_Description_SC[(Gene_Description_SC$SGD_DB_ID %in% as.character(Intersect_Para_down_recued_by_salt_SC)), ]
+str(Intersect_Para_down_recued_by_salt_des_SC)
+Intersect_Para_down_recued_by_salt_des_SC <- cbind(Intersect_Para_down_recued_by_salt_des_SC, 
+                             salt_SC[as.character(Intersect_Para_down_recued_by_salt_des_SC$SYS_ID), c(2,6)],
+                             para_SC[as.character(Intersect_Para_down_recued_by_salt_des_SC$SYS_ID), c(2,6)],
+                             SaPa_SC[as.character(Intersect_Para_down_recued_by_salt_des_SC$SYS_ID), c(2,6)])
+
+#write.table(Intersect_Para_down_recued_by_salt_des_SC, file = "COMPILED_DATA/SET_DIFFERENCE/Intersect_Para_down_recued_by_salt_des_SC.txt", sep = "\t", na = "NA", row.names = FALSE, col.names = TRUE, quote = FALSE)
+```
+
+```{r figure40, echo=FALSE, fig.cap="Figure 32: Venn diagram: Intersect_SaPa_up", fig.width=8, fig.height=8}
+Intersect_list_Para_down_recued_by_salt_des_SC <- list(GO_para_SC_down_wo_GRG,
+                          GO_SaPavsPara_SC_up_wo_GRG)
+library(ggvenn)
+names(Intersect_list_Para_down_recued_by_salt_des_SC) <- c("P","SP_P")
+ggvenn(Intersect_list_Para_down_recued_by_salt_des_SC, 
+  fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, 
+  set_name_size = 4)
+```
+
 
 ### GO_ANALYSIS FOR S. CEREVISIAE
 
@@ -1948,6 +2007,104 @@ input_files <- list.files(path = "COMPILED_DATA/GO_GENE_LISTS_DH/GO_Input_wo_GRG
 
 #for (file in input_files) {go_enrichment(input_file = file, background_file = "COMPILED_DATA/GO_GENE_LISTS_SC/BACKGROUND_GENESET_SGD_DB_ID.txt", p_value_threshold = 0.1)}
 ```
+
+### GENE SET ENRICHMENT ANALYSIS FOR S. CEREVISIAE
+
+**Gene Set Enrichment Analysis (GSEA)** is a computational method that determines whether a pre-defined set of genes (ex: those beloging to a specific GO term or KEGG pathway) shows statistically significant, concordant differences between two biological states.
+
+#### GSEA SALT
+
+```{r}
+library(clusterProfiler)
+library(enrichplot)
+library(ggplot2)
+
+
+# Extract the column as a vector, remove NAs, and sort
+original_gene_list_Salt_SC <- na.omit(setNames(salt_SC[, 2], rownames(salt_SC)))
+gene_list_Salt_SC <- sort(original_gene_list_Salt_SC, decreasing = TRUE)
+set.seed(1234)
+gse_Salt_SC <- gseGO(geneList=gene_list_Salt_SC, 
+             ont ="ALL", 
+             keyType = "ORF", 
+             nPerm = 10000, 
+             minGSSize = 3, 
+             maxGSSize = 800, 
+             pvalueCutoff = 0.05, 
+             verbose = TRUE, 
+             OrgDb = "org.Sc.sgd.db", 
+             pAdjustMethod = "none")
+```
+
+```{r figure41, echo=FALSE, fig.cap="Figure 33.A: GSEA Salt vs Ctrl SC", fig.width=25, fig.height=20}
+#Dotplot
+
+# Extract the result data frame
+result_df <- gse_Salt_SC@result
+
+# Filter significant terms (adjusted p-value < 0.05)
+significant_terms <- result_df[result_df$p.adjust < 0.05, ]
+
+# Extract top 10 activated GO terms (NES > 0)
+top_activated <- significant_terms[significant_terms$NES > 0, ]
+top_activated <- top_activated[order(top_activated$p.adjust), ][1:15, ]  # Order by NES descending
+print(top_activated$Description)
+
+# Extract top 10 suppressed GO terms (NES < 0)
+top_suppressed <- significant_terms[significant_terms$NES < 0, ]
+top_suppressed <- top_suppressed[order(top_suppressed$p.adjust), ][1:15, ]
+print(top_suppressed$Description)
+# Combine the two subsets
+top_terms <- rbind(top_activated, top_suppressed)
+
+# Subset the original GSEA object to include only the selected terms
+filtered_gsea_Salt_SC <- gse_Salt_SC
+filtered_gsea_Salt_SC@result <- filtered_gsea_Salt_SC@result[filtered_gsea_Salt_SC@result$ID %in% top_terms$ID, ]
+
+# Perform the dotplot
+require(DOSE)
+dotplot(filtered_gsea_Salt_SC, showCategory = 15, split = ".sign") + 
+  facet_grid(. ~ .sign) +
+  theme(
+    axis.text.x = element_text(size = 14, angle = 45, hjust = 1), 
+    axis.text.y = element_text(size = 12), 
+    strip.text = element_text(size = 16), 
+    legend.text = element_text(size = 12), 
+    legend.title = element_text(size = 14)
+  )+
+  scale_y_discrete(labels = function(x) stringr::str_replace_all(x, "\n", " ")) # Replace line breaks with spaces
+print(filtered_gsea_Salt_SC@result$Description)
+```
+
+```{r figure42, echo=FALSE, fig.cap="Figure 33.B: Enrichment Map Salt vs Ctrl SC", fig.width=16, fig.height=16}
+#Enrichment map organizes enriched terms into a network with edges connecting overlapping gene sets. In this way, mutually overlapping gene sets are tend to cluster together, making it easy to identify functional modules.
+emapplot(pairwise_termsim(filtered_gsea_Salt_SC), showCategory = 20)
+
+```
+
+```{r figure43, echo=FALSE, fig.cap="Figure 33.C: Category Netplot Salt vs Ctrl SC", fig.width=16, fig.height=8}
+#The cnetplot depicts the linkages of genes and biological concepts (e.g. GO terms or KEGG pathways) as a network (helpful to see which genes are involved in enriched pathways and genes that may belong to multiple annotation categories).
+
+# categorySize can be either 'pvalue' or 'geneNum'
+cnetplot(filtered_gsea_Salt_SC, categorySize="pvalue", foldChange=gene_list_Salt_SC, showCategory = 3)
+
+```
+
+```{r figure44, echo=FALSE, fig.cap="Figure 33.D: Ridgeplot Salt vs Ctrl SC", fig.width=24, fig.height=20}
+#Ridgeplot: Grouped by gene set, density plots are generated by using the frequency of fold change values per gene within each set. Helpful to interpret up/down-regulated pathways.
+
+ridgeplot(filtered_gsea_Salt_SC) + 
+  labs(x = "enrichment distribution") + 
+  theme(
+    axis.text.x = element_text(size = 14), 
+    axis.text.y = element_text(size = 12), # Customize y-axis text
+    legend.text = element_text(size = 12), 
+    legend.title = element_text(size = 14)
+  ) +
+  scale_y_discrete(labels = function(x) stringr::str_replace_all(x, "\n", " ")) # Replace line breaks with spaces
+
+```
+
 
 ```{r}
 #knitr::purl("MixTox_Transcriptomics_Downstream_Analysis.Rmd", documentation = 2)
